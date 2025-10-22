@@ -1,18 +1,18 @@
-# [NeurIPS 2023] Reflexion: Language Agents with Verbal Reinforcement Learning
+# [NeurIPS 2023] Reflexion: Language Agents with Verbal Reinforcement Learning (Replication + Extension)
 
-This repo holds the code, demos, and log files for [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) by Noah Shinn, Federico Cassano, Edward Berman, Ashwin Gopinath, Karthik Narasimhan, Shunyu Yao. 
+<!-- This repo holds the code, demos, and log files for [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) by Noah Shinn, Federico Cassano, Edward Berman, Ashwin Gopinath, Karthik Narasimhan, Shunyu Yao. -->
 
-![Reflexion RL diagram](./figures/reflexion_rl.png)
+<!-- ![Reflexion RL diagram](./figures/reflexion_rl.png) -->
 
-![Reflexion tasks](./figures/reflexion_tasks.png)
+<!-- ![Reflexion tasks](./figures/reflexion_tasks.png) -->
 
-We have released the LeetcodeHardGym [here](https://github.com/GammaTauAI/leetcode-hard-gym)
+<!-- We have released the LeetcodeHardGym [here](https://github.com/GammaTauAI/leetcode-hard-gym) -->
 
 ## To Run: reasoning (HotPotQA)
 
 We have provided a set of notebooks to easily run, explore, and interact with the results of the reasoning experiments. Each experiment consists of a random sample of 100 questions from the HotPotQA distractor dataset. Each question in the sample is attempted by an agent with a specific type and reflexion strategy.
 
-### Setup
+### Setup (for HotPotQA)
 
 To get started:
 
@@ -22,9 +22,22 @@ To get started:
 git clone https://github.com/noahshinn/reflexion && cd ./hotpotqa_runs
 ```
 
-2. Install the module dependencies into your environment:
+2. Use the right python and install module dependencies into your environment:
+*Get pyenv here if needed*: <https://github.com/pyenv/pyenv>
 
 ```bash
+# Use python version 3.11.9
+
+pyenv install 3.11.9
+pyenv local 3.11.9 
+python -V
+
+
+python -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+python -m pip install –upgrade pip
 pip install -r requirements.txt
 ```
 
@@ -40,7 +53,7 @@ Agent type is determined by the notebook you choose to run. The available agent 
 
 - `ReAct` - ReAct Agent
 
-- `CoT_context` - CoT Agent given supporting context about the question 
+- `CoT_context` - CoT Agent given supporting context about the question
 
 - `CoT_no_context` - CoT Agent given no supporting context about the question
 
@@ -50,13 +63,15 @@ The notebook for each agent type is located in the `./hotpot_runs/notebooks` dir
 
 Each notebook allows you to specify the reflexion strategy to be used by the agents. The available reflexion strategies, which are defined in an `Enum`, include:
 
-- `ReflexionStrategy.NONE` - The agent is not given any information about its last attempt. 
+- `ReflexionStrategy.NONE` - The agent is not given any information about its last attempt.
 
 - `ReflexionStrategy.LAST_ATTEMPT` - The agent is given its reasoning trace from its last attempt on the question as context.
 
-- `ReflexionStrategy.REFLEXION` - The agent is given its self-reflection on the last attempt as context. 
+- `ReflexionStrategy.REFLEXION` - The agent is given its self-reflection on the last attempt as context.
 
 - `ReflexionStrategy.LAST_ATTEMPT_AND_REFLEXION` -  The agent is given both its reasoning trace and self-reflection on the last attempt as context.
+
+# Yuchen - The stuff below I have not changed and thus may not work correct
 
 ### To Run: decision-making (AlfWorld)
 
