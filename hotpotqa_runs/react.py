@@ -4,13 +4,14 @@ import dotenv
 
 import gym
 import tiktoken
-from langchain import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.llms.base import BaseLLM
 from langchain.prompts import PromptTemplate
 
 from environment import QAEnv
 from prompts import reflect_prompt, react_agent_prompt, react_reflect_agent_prompt, REFLECTION_HEADER
 from fewshots import WEBTHINK_SIMPLE6, REFLECTIONS
+from langchain.schema import HumanMessage
 
 dotenv.load_dotenv()
 
@@ -18,16 +19,15 @@ class ReactAgent:
     """
     A question answering ReAct Agent.
     """
+    # NOTE: Migrated from deprecated OpenAI Completions (text-davinci-003) to ChatOpenAI.
+    # Set REFLEXION_MODEL env var to override the default model (e.g., "gpt-4o" or "gpt-4o-mini").
     def __init__(self,
                  question: str,
                  env: QAEnv,
                  agent_prompt: PromptTemplate = react_agent_prompt,
-                 react_llm: BaseLLM = OpenAI(
+                 react_llm: BaseLLM = ChatOpenAI(
                                              temperature=0,
-                                             max_tokens=100,
-                                             model_name="text-davinci-003",
-                                             model_kwargs={"stop": "\n"},
-                                             openai_api_key=os.environ['OPENAI_API_KEY']),
+                                             model_name=os.getenv("REFLEXION_MODEL", "gpt-4o-mini")),
                  ) -> None:
         
         self.question = question
@@ -41,7 +41,7 @@ class ReactAgent:
 
         self.llm = react_llm
         
-        self.enc = tiktoken.encoding_for_model("text-davinci-003")
+        self.enc = tiktoken.get_encoding("cl100k_base")
 
     def run(self, reset = True) -> None:
         if reset:
@@ -70,7 +70,11 @@ class ReactAgent:
         print(self.scratchpad.split('\n')[-1])
 
     def prompt_agent(self) -> str:
-        return format_step(self.llm(self._build_agent_prompt()))
+        prompt = self._build_agent_prompt()
+        resp = self.llm([HumanMessage(content=prompt)], stop=["\n"])  # call with a list of messages
+        # resp can be an AIMessage or a ChatResult depending on LC version:
+        content = getattr(resp, "content", None) or resp.generations[0].message.content
+        return format_step(content)
     
     def _build_agent_prompt(self) -> str:
         return self.agent_prompt.format(
@@ -96,22 +100,19 @@ class ReactReflectAgent(ReactAgent):
     """
     A question answering Self-Reflecting React Agent.
     """
+    # NOTE: Migrated from deprecated OpenAI Completions (text-davinci-003) to ChatOpenAI.
+    # Set REFLEXION_MODEL env var to override the default model (e.g., "gpt-4o" or "gpt-4o-mini").
     def __init__(self,
                  question: str,
                  env: QAEnv,
                  agent_prompt: PromptTemplate = react_reflect_agent_prompt,
                  reflect_prompt: PromptTemplate = reflect_prompt,
-                 react_llm: BaseLLM = OpenAI(
+                 react_llm: BaseLLM = ChatOpenAI(
                                              temperature=0,
-                                             max_tokens=100,
-                                             model_name="text-davinci-003",
-                                             model_kwargs={"stop": "\n"},
-                                             openai_api_key=os.environ['OPENAI_API_KEY']),
-                 reflect_llm: BaseLLM = OpenAI(
+                                             model_name=os.getenv("REFLEXION_MODEL", "gpt-4o-mini")),
+                 reflect_llm: BaseLLM = ChatOpenAI(
                                                temperature=0,
-                                               max_tokens=250,
-                                               model_name="text-davinci-003",
-                                               openai_api_key=os.environ['OPENAI_API_KEY']),
+                                               model_name=os.getenv("REFLEXION_MODEL", "gpt-4o-mini")),
                  ) -> None:
         
         super().__init__(question, env, agent_prompt, react_llm)
@@ -130,7 +131,10 @@ class ReactReflectAgent(ReactAgent):
         self.reflections.append(self.prompt_reflection())
     
     def prompt_reflection(self) -> str:
-        return format_step(self.reflect_llm(self._build_reflection_prompt()))
+        prompt = self._build_reflection_prompt()
+        resp = self.reflect_llm([HumanMessage(content=prompt)])
+        content = getattr(resp, "content", None) or resp.generations[0].message.content
+        return format_step(content)
 
 
     def _build_reflection_prompt(self) -> str:
@@ -167,6 +171,3 @@ def format_reflections(reflections: List[str]) -> str:
 
 def format_step(step: str) -> str:
     return step.strip('\n').strip().replace('\n', '')
-
-
-

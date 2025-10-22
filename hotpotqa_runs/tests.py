@@ -1,12 +1,16 @@
 
 import joblib
-from react_cls import ReactReflectAgent
+from react import ReactReflectAgent
 from mocks import DocStoreExplorerMock, LLMMock
+from environment import QAEnv
 
-test_q = "What is the elevation range for the area that the eastern sector of the Colorado orogeny extends into?"
-test_a = "1,800 to 7,000 ft"
+test_q = "Who wrote The Great Gatsby?"
+test_a = "F. Scott Fitzgerald"
 
-agent = ReactReflectAgent(test_q, test_a)
+# Adjust args to QAEnv to match its signature in environment.py
+env = QAEnv(question=test_q, key=test_a, max_steps=6) 
+
+agent = ReactReflectAgent(question=test_q, env=env)
 
 agent.run()
 
