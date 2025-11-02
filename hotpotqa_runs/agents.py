@@ -2,18 +2,53 @@ import re, string, os
 from typing import List, Union, Literal
 from enum import Enum
 import tiktoken
-from langchain import OpenAI, Wikipedia
-from langchain.llms.base import BaseLLM
-from langchain.chat_models import ChatOpenAI
-from langchain.chat_models.base import BaseChatModel
-from langchain.schema import (
-    SystemMessage,
-    HumanMessage,
-    AIMessage,
-)
-from langchain.agents.react.base import DocstoreExplorer
-from langchain.docstore.base import Docstore
-from langchain.prompts import PromptTemplate
+
+try:
+    from langchain_openai import OpenAI, ChatOpenAI
+except ImportError:
+    from langchain.llms import OpenAI
+    from langchain.chat_models import ChatOpenAI
+
+try:
+    from langchain_community.utilities import WikipediaAPIWrapper as Wikipedia
+except ImportError:
+    try:
+        from langchain.utilities import WikipediaAPIWrapper as Wikipedia
+    except ImportError:
+        from langchain import Wikipedia
+
+try:
+    from langchain_core.language_models.llms import BaseLLM
+except ImportError:
+    from langchain.llms.base import BaseLLM
+
+try:
+    from langchain_core.language_models.chat_models import BaseChatModel
+except ImportError:
+    from langchain.chat_models.base import BaseChatModel
+
+try:
+    from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+except ImportError:
+    from langchain.schema import SystemMessage, HumanMessage, AIMessage
+
+try:
+    from langchain_classic.agents.react.base import DocstoreExplorer
+except ImportError:
+    try:
+        from langchain.agents.react.base import DocstoreExplorer
+    except ImportError:
+        from langchain_community.agent_toolkits.base import DocstoreExplorer
+
+try:
+    from langchain_community.docstore.base import Docstore
+except ImportError:
+    from langchain.docstore.base import Docstore
+
+try:
+    from langchain_core.prompts import PromptTemplate
+except ImportError:
+    from langchain.prompts import PromptTemplate
 from llm import AnyOpenAILLM
 from prompts import reflect_prompt, react_agent_prompt, react_reflect_agent_prompt, REFLECTION_HEADER, LAST_TRIAL_HEADER, REFLECTION_AFTER_LAST_TRIAL_HEADER
 from prompts import cot_agent_prompt, cot_reflect_agent_prompt, cot_reflect_prompt, COT_INSTRUCTION, COT_REFLECT_INSTRUCTION
@@ -42,18 +77,8 @@ class CoTAgent:
                     reflect_prompt: PromptTemplate = cot_reflect_prompt,
                     cot_examples: str = COT,
                     reflect_examples: str = COT_REFLECT,
-                    self_reflect_llm: AnyOpenAILLM = AnyOpenAILLM(
-                                            temperature=0,
-                                            max_tokens=250,
-                                            model_name="gpt-3.5-turbo",
-                                            model_kwargs={"stop": "\n"},
-                                            openai_api_key=os.environ['OPENAI_API_KEY']),
-                    action_llm: AnyOpenAILLM = AnyOpenAILLM(
-                                            temperature=0,
-                                            max_tokens=250,
-                                            model_name="gpt-3.5-turbo",
-                                            model_kwargs={"stop": "\n"},
-                                            openai_api_key=os.environ['OPENAI_API_KEY']),
+                    self_reflect_llm = None,
+                    action_llm = None,
                     ) -> None:
         self.question = question
         self.context = context
@@ -62,8 +87,34 @@ class CoTAgent:
         self.reflect_prompt = reflect_prompt
         self.cot_examples = cot_examples 
         self.reflect_examples = reflect_examples
-        self.self_reflect_llm = self_reflect_llm
-        self.action_llm = action_llm
+
+        # Initialize LLMs with defaults if not provided
+        if self_reflect_llm is None:
+            if 'OPENAI_API_KEY' in os.environ:
+                self.self_reflect_llm = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=250,
+                    model_name="gpt-3.5-turbo",
+                    model_kwargs={"stop": "\n"},
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+            else:
+                raise ValueError("self_reflect_llm must be provided or OPENAI_API_KEY must be set")
+        else:
+            self.self_reflect_llm = self_reflect_llm
+
+        if action_llm is None:
+            if 'OPENAI_API_KEY' in os.environ:
+                self.action_llm = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=250,
+                    model_name="gpt-3.5-turbo",
+                    model_kwargs={"stop": "\n"},
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+            else:
+                raise ValueError("action_llm must be provided or OPENAI_API_KEY must be set")
+        else:
+            self.action_llm = action_llm
+
         self.reflections: List[str] = []
         self.reflections_str = ''
         self.answer = ''
@@ -158,15 +209,10 @@ class ReactAgent:
                  key: str,
                  max_steps: int = 6,
                  agent_prompt: PromptTemplate = react_agent_prompt,
-                 docstore: Docstore = Wikipedia(),
-                 react_llm: AnyOpenAILLM = AnyOpenAILLM(
-                                            temperature=0,
-                                            max_tokens=100,
-                                            model_name="gpt-3.5-turbo",
-                                            model_kwargs={"stop": "\n"},
-                                            openai_api_key=os.environ['OPENAI_API_KEY']),
+                 docstore = None,
+                 react_llm = None,
                  ) -> None:
-        
+
         self.question = question
         self.answer = ''
         self.key = key
@@ -174,8 +220,24 @@ class ReactAgent:
         self.agent_prompt = agent_prompt
         self.react_examples = WEBTHINK_SIMPLE6
 
+        # Initialize docstore with default if not provided
+        if docstore is None:
+            docstore = Wikipedia()
         self.docstore = DocstoreExplorer(docstore) # Search, Lookup
-        self.llm = react_llm
+
+        # Initialize LLM with default if not provided
+        if react_llm is None:
+            if 'OPENAI_API_KEY' in os.environ:
+                self.llm = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=100,
+                    model_name="gpt-3.5-turbo",
+                    model_kwargs={"stop": "\n"},
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+            else:
+                raise ValueError("react_llm must be provided or OPENAI_API_KEY must be set")
+        else:
+            self.llm = react_llm
         
         self.enc = tiktoken.encoding_for_model("text-davinci-003")
 
@@ -268,22 +330,25 @@ class ReactReflectAgent(ReactAgent):
                  max_steps: int = 6,
                  agent_prompt: PromptTemplate = react_reflect_agent_prompt,
                  reflect_prompt: PromptTemplate = reflect_prompt,
-                 docstore: Docstore = Wikipedia(),
-                 react_llm: AnyOpenAILLM = AnyOpenAILLM(
-                                             temperature=0,
-                                             max_tokens=100,
-                                             model_name="gpt-3.5-turbo",
-                                             model_kwargs={"stop": "\n"},
-                                             openai_api_key=os.environ['OPENAI_API_KEY']),
-                 reflect_llm: AnyOpenAILLM = AnyOpenAILLM(
-                                               temperature=0,
-                                               max_tokens=250,
-                                               model_name="gpt-3.5-turbo",
-                                               openai_api_key=os.environ['OPENAI_API_KEY']),
+                 docstore = None,
+                 react_llm = None,
+                 reflect_llm = None,
                  ) -> None:
-        
+
         super().__init__(question, key, max_steps, agent_prompt, docstore, react_llm)
-        self.reflect_llm = reflect_llm
+
+        # Initialize reflect_llm with default if not provided
+        if reflect_llm is None:
+            if 'OPENAI_API_KEY' in os.environ:
+                self.reflect_llm = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=250,
+                    model_name="gpt-3.5-turbo",
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+            else:
+                raise ValueError("reflect_llm must be provided or OPENAI_API_KEY must be set")
+        else:
+            self.reflect_llm = reflect_llm
         self.reflect_prompt = reflect_prompt
         self.reflect_examples = REFLECTIONS
         self.reflections: List[str] = []
@@ -292,6 +357,8 @@ class ReactReflectAgent(ReactAgent):
     def run(self, reset = True, reflect_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION) -> None:
         if (self.is_finished() or self.is_halted()) and not self.is_correct():
             self.reflect(reflect_strategy)
+            # After reflection, always reset to start a fresh attempt with new reflections
+            reset = True
 
         ReactAgent.run(self, reset)
     
