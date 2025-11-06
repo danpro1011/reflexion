@@ -28,9 +28,12 @@ def run_simple(
         cur_pass = 0
         is_solved = False
         cur_func_impl = ""
+        print(f"Processing example {i+1}/{num_items}")
         while cur_pass < pass_at_k:
             cur_func_impl = gen.func_impl(item["prompt"], model, "simple")
+            print(f"cur_func_impl: {cur_func_impl} (type: {type(cur_func_impl)})")
             assert isinstance(cur_func_impl, str)
+            print(f"\nGenerated code for example {i+1}:\n{cur_func_impl}\n")
             is_passing = exe.evaluate(item["entry_point"], cur_func_impl, item["test"], timeout = 20 if is_leetcode else 10)
             if is_passing:
                 is_solved = True
