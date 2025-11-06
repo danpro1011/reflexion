@@ -2,7 +2,7 @@ import os
 import argparse
 from immediate_refinement import run_immediate_refinement
 from immediate_reflexion import run_immediate_reflexion
-
+#print("OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
 from simple import run_simple
 from reflexion import run_reflexion
 #from reflexion_ucs import run_reflexion_ucs

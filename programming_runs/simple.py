@@ -3,6 +3,7 @@ from executors import executor_factory
 from generators import generator_factory, model_factory
 
 from typing import List
+# TODO: PUT IN SOME LOGGING 
 
 SIMPLE_COMPLETION_INSTRUCTION = "# Write the body of this function only."
 SIMPLE_CHAT_INSTRUCTION = "You are a programming assistant. You will be given a function signature and docstring. You should fill in the following text of the missing function body. For example, the first line of the completion should have 4 spaces for the indendation so that it fits syntactically with the preceding signature."

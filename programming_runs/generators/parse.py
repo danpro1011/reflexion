@@ -1,7 +1,7 @@
 import re
-from typing import Optional
+from typing import Optional, List
 
-
+# TODO: DEBUG 
 def parse_code_block(string: str, lang: str) -> Optional[str]:
     code_pattern = fr"```{lang}\n(.*?)\n```"
     match = re.search(code_pattern, string, re.DOTALL)
@@ -16,7 +16,6 @@ def parse_code_block(string: str, lang: str) -> Optional[str]:
         return match.group(1)
 
     return parse_first_func(string, lang)
-
 
 def parse_first_func(code: str, lang: str) -> Optional[str]:
     assert lang == "python", "Only python is supported for now. TODO: Rust"

@@ -3,7 +3,7 @@ from executors import executor_factory
 from generators import generator_factory, model_factory
 
 from typing import List
-
+# TODO: Put in some logging
 
 def run_reflexion(
     dataset: List[dict],
@@ -39,7 +39,14 @@ def run_reflexion(
             # first attempt
             cur_func_impl = gen.func_impl(item["prompt"], model, "simple")
             implementations.append(cur_func_impl)
-            assert isinstance(cur_func_impl, str)
+            print("\n--- DEBUG: func_impl output ---")
+            print("cur_func_impl:", repr(cur_func_impl), "type:", type(cur_func_impl))
+            if not isinstance(cur_func_impl, str) or not cur_func_impl.strip():
+                print("WARNING: Failed to parse function implementation. Raw output:")
+                print(cur_func_impl)
+                continue  # or handle as needed
+            # TODO: COMMENTED OUT ASSERTION HERE 
+            #assert isinstance(cur_func_impl, str)
             is_passing, feedback, _ = exe.execute(cur_func_impl, tests_i)
             test_feedback.append(feedback)
 
@@ -70,7 +77,8 @@ def run_reflexion(
                     self_reflection=reflection,
                 )
                 implementations.append(cur_func_impl)
-                assert isinstance(cur_func_impl, str)
+                # TODO: COMMENTED OUT ASSERTION HERE
+                #assert isinstance(cur_func_impl, str)
 
                 # check if all internal unit tests pass
                 is_passing, cur_feedback, _ = exe.execute(
