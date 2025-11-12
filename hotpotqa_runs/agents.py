@@ -10,12 +10,9 @@ except ImportError:
     from langchain.chat_models import ChatOpenAI
 
 try:
-    from langchain_community.utilities import WikipediaAPIWrapper as Wikipedia
+    from langchain_community.docstore.wikipedia import Wikipedia
 except ImportError:
-    try:
-        from langchain.utilities import WikipediaAPIWrapper as Wikipedia
-    except ImportError:
-        from langchain import Wikipedia
+    from langchain.docstore.wikipedia import Wikipedia
 
 try:
     from langchain_core.language_models.llms import BaseLLM
@@ -278,7 +275,45 @@ class ReactAgent:
 
         if action_type == 'Search':
             try:
-                self.scratchpad += format_step(self.docstore.search(argument))
+                result = self.docstore.search(argument)
+                if result.startswith('Could not find'):
+                    self.scratchpad += format_step(result)
+                else:
+                    if hasattr(self.docstore, 'document') and self.docstore.document is not None:
+                        page_url = self.docstore.document.metadata.get('page', '')
+                        page_title_raw = page_url.split('/')[-1].replace('_', ' ')
+                        page_title = page_title_raw.replace(',', '').lower()
+                        search_term = argument.replace(',', '').lower()
+
+                        page_title_clean = page_title.replace('inc.', '').replace('ltd.', '').replace('(', '').replace(')', '').strip()
+                        search_term_clean = search_term.replace('inc.', '').replace('ltd.', '').strip()
+
+                       #fuzzy matching
+                        search_words = [w for w in search_term_clean.split() if len(w) > 2]  # Skip short words
+                        title_words = [w for w in page_title_clean.split() if len(w) > 2]
+
+                        def words_similar(w1, w2):
+                            if w1 == w2:
+                                return True
+                            if w1.startswith(w2) or w2.startswith(w1):
+                                return True
+                            if len(w1) >= 4 and len(w2) >= 4:
+                                common_chars = sum(1 for c in set(w1) if c in w2)
+                                return common_chars >= min(len(w1), len(w2)) - 1
+                            return False
+
+                        if len(search_words) > 0:
+                            matching_words = sum(1 for sw in search_words
+                                               if any(words_similar(sw, tw) for tw in title_words))
+                            match_ratio = matching_words / len(search_words)
+                        else:
+                            match_ratio = 1.0  
+                        if match_ratio < 0.6:
+                            self.scratchpad += f'Could not find [{argument}]. The search returned a different page ("{page_title_raw}"). Try searching for a related topic or more specific terms.'
+                        else:
+                            self.scratchpad += format_step(result)
+                    else:
+                        self.scratchpad += format_step(result)
             except Exception as e:
                 print(e)
                 self.scratchpad += f'Could not find that page, please try again.'
@@ -408,9 +443,9 @@ def parse_action(string):
         action_type = match.group(1)
         argument = match.group(2)
         return action_type, argument
-    
+
     else:
-        return None
+        return None, None
 
 def format_step(step: str) -> str:
     return step.strip('\n').strip().replace('\n', '')

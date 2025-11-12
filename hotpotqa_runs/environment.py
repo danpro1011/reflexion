@@ -3,8 +3,18 @@ import string
 from typing import Tuple
 
 import gym
-from langchain import Wikipedia
-from langchain.agents.react.base import DocstoreExplorer
+try:
+    from langchain_community.docstore.wikipedia import Wikipedia
+except ImportError:
+    from langchain.docstore.wikipedia import Wikipedia
+
+try:
+    from langchain_classic.agents.react.base import DocstoreExplorer
+except ImportError:
+    try:
+        from langchain.agents.react.base import DocstoreExplorer
+    except ImportError:
+        from langchain_community.agent_toolkits.base import DocstoreExplorer
 
 class QAEnv(gym.Env):
     def __init__(self,
