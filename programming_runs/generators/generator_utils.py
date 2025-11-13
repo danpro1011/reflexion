@@ -58,7 +58,7 @@ def generic_generate_func_impl(
                 ),
                 Message(
                     role="user",
-                    content=f"[improved impl]:\n{func_sig}",
+                    content=f"[improved impl]:\nWrite the COMPLETE Python implementation with actual code (restate the function signature):\n{func_sig}",
                 ),
             ]
             func_bodies = model.generate_chat(messages=messages, num_comps=num_comps, temperature=temperature)
@@ -206,3 +206,11 @@ def print_generated_func_body(func_body_str: str) -> None:
     print(f"""--------------------- GENERATED FUNC BODY ---------------------
 {func_body_str}
 ------------------------------------------""")
+
+def normalize_code_blocks(text: str) -> str:
+
+    import re
+
+    text = re.sub(r'```\s*```(\s*```)*', '', text)
+
+    return text
