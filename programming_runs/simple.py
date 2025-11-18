@@ -4,6 +4,8 @@ from generators import generator_factory, model_factory
 
 from typing import List
 import logging
+import os
+api_key = os.environ.get("OPENAI_API_KEY")
 
 # Configure logging to both console and file
 logging.basicConfig(
