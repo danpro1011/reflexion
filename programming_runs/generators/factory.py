@@ -2,7 +2,7 @@ from .py_generate import PyGenerator
 from .rs_generate import RsGenerator
 from .generator_types import Generator
 from .model import CodeLlama, ModelBase, GPT4, GPT35, StarChat, GPTDavinci
-from llm import LocalLLM
+# from llm import LocalLLM  
 
 def generator_factory(lang: str) -> Generator:
     if lang == "py" or lang == "python":
@@ -25,6 +25,7 @@ def model_factory(model_name: str) -> ModelBase:
             kwargs["version"] = model_name.split("-")[1]
         return CodeLlama(**kwargs)
     elif model_name == "meta-llama/Llama-3.2-3B-Instruct":
+        from llm import LocalLLM
         return LocalLLM(
             model_name="meta-llama/Llama-3.2-3B-Instruct",
             temperature=0,

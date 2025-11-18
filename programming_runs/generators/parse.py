@@ -1,47 +1,133 @@
 import re
 from typing import Optional, List
 
-# TODO: DEBUG 
-def parse_code_block(string: str, lang: str) -> Optional[str]:
-    code_pattern = fr"```{lang}\n(.*?)\n```"
-    match = re.search(code_pattern, string, re.DOTALL)
+# TODO: DEBUG
+def parse_code_block(string: str, lang: str, verbose: bool = True) -> Optional[str]:
+    """
+    Improved parsing that handles multiple edge cases:
+    - Code blocks with/without language specifier
+    - Code blocks with/without newlines after backticks
+    - Inline code mixed with explanations
+    - Multiple code blocks (takes the first valid one with a function definition)
+    """
 
-    if match:
-        return match.group(1)
+    # Try multiple patterns in order of specificity
+    pattern = fr"```{lang}\s*\n(.*?)\n```"
+    matches = re.findall(pattern, string, re.DOTALL)
+    for match in matches:
+        result = match.strip()
+        if result and len(result) > 10 and 'def ' in result:
+            return result
 
-    generic_code_pattern = r"```\n(.*?)\n```"
-    match = re.search(generic_code_pattern, string, re.DOTALL)
+    pattern = r"```\s*\n(.*?)\n```"
+    matches = re.findall(pattern, string, re.DOTALL)
+    for match in matches:
+        result = match.strip()
+        if result and len(result) > 10 and 'def ' in result:
+            return result
 
-    if match:
-        return match.group(1)
+    pattern = fr"```{lang}\s+(.*?)```"
+    matches = re.findall(pattern, string, re.DOTALL)
+    for match in matches:
+        result = match.strip()
+        if result and len(result) > 10 and 'def ' in result:
+            return result
 
-    return parse_first_func(string, lang)
+    pattern = r"```\s+(.*?)```"
+    matches = re.findall(pattern, string, re.DOTALL)
+    for match in matches:
+        result = match.strip()
+        if result and len(result) > 10 and 'def ' in result:
+            return result
+
+    # Fallback to parse_first_func
+    result = parse_first_func(string, lang)
+
+    # If parsing failed and verbose mode, print diagnostic info
+    if result is None and verbose:
+        print(f"\n[PARSE DEBUG] Failed to parse. Model output (first 500 chars):")
+        print(repr(string[:500]))
+        print(f"[PARSE DEBUG] Model output length: {len(string)} chars")
+        print(f"[PARSE DEBUG] Contains 'def ': {'def ' in string}")
+        print(f"[PARSE DEBUG] Contains code blocks: {'```' in string}\n")
+
+    return result
 
 def parse_first_func(code: str, lang: str) -> Optional[str]:
+    """
+    Improved function extraction that handles:
+    - Functions without explicit returns
+    - Functions with multiple empty lines
+    - Functions with nested definitions
+    - Various indentation levels
+    - Comments and test code after function
+    """
     assert lang == "python", "Only python is supported for now. TODO: Rust"
+
     code_lines = code.split("\n")
     def_i = -1
     last_i = 0
-    got_return = False
-    for i, line in enumerate(code_lines):
-        if line.startswith("def "):
-            if def_i == -1:
-                def_i = i
-            else:
-                break
-        elif "return" in line and def_i != -1:
-            got_return = True
-        if line == "" and def_i != -1 and got_return:
-            last_i = i
-            break
+    base_indent = None
 
-    if last_i == 0:
+    for i, line in enumerate(code_lines):
+        if def_i == -1:
+            if line.strip().startswith("def "):
+                def_i = i
+                base_indent = len(line) - len(line.lstrip())
+        else:
+            stripped = line.strip()
+
+            if not stripped or stripped.startswith("#"):
+                continue
+
+            current_indent = len(line) - len(line.lstrip())
+
+            if current_indent <= base_indent and stripped:
+                if stripped.startswith("def ") or stripped.startswith("class "):
+                    last_i = i - 1
+                    break
+                elif stripped.startswith("print(") or stripped.startswith("assert ") or stripped.startswith("if __name__"):
+                    last_i = i - 1
+                    break
+
+    if def_i != -1 and last_i == 0:
         last_i = len(code_lines) - 1
+
+        while last_i > def_i and not code_lines[last_i].strip():
+            last_i -= 1
 
     if def_i == -1:
         return None
 
-    return "\n".join(code_lines[def_i:last_i+1]).rstrip("[/PYTHON]")
+    func_code = "\n".join(code_lines[def_i:last_i+1])
+
+    func_code = func_code.rstrip("[/PYTHON]")
+    func_code = func_code.rstrip("```")
+    func_code = func_code.strip()
+
+    # Check if function has actual body (more than just signature and docstring)
+    lines = func_code.split('\n')
+    if len(lines) <= 1:
+        return None  # Just signature, no body
+
+    # Count non-empty, non-comment, non-docstring lines after signature
+    in_docstring = False
+    body_lines = 0
+    for i, line in enumerate(lines[1:]):  # Skip first line (def ...)
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#'):
+            continue
+        if '"""' in stripped or "'''" in stripped:
+            in_docstring = not in_docstring
+            continue
+        if not in_docstring:
+            body_lines += 1
+
+    # Must have at least one line of actual code
+    if body_lines == 0:
+        return None
+
+    return func_code if func_code else None
 
 
 def add_code_block(string: str, lang: str) -> str:

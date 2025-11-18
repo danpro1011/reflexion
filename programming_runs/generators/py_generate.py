@@ -14,7 +14,7 @@ USE_PYTHON_CODEBLOCK_INSTRUCTION = "Use a Python code block to write your respon
 
 PY_SIMPLE_CHAT_INSTRUCTION = "You are an AI that only responds with python code, NOT ENGLISH. You will be given a function signature and its docstring by the user. Write your full implementation (restate the function signature)."
 PY_SIMPLE_CHAT_INSTRUCTION_V2 = "You are an AI that only responds with only python code. You will be given a function signature and its docstring by the user. Write your full implementation (restate the function signature)."
-PY_REFLEXION_CHAT_INSTRUCTION = "You are an AI Python assistant. You will be given your past function implementation, a series of unit tests, and a hint to change the implementation appropriately. Write your full implementation (restate the function signature)."
+PY_REFLEXION_CHAT_INSTRUCTION = "You are an AI that ONLY responds with PYTHON CODE. You will be given your past function implementation, a series of unit tests, and a hint to change the implementation appropriately. You MUST respond with the complete working Python code implementation. DO NOT write explanations or descriptions - ONLY CODE."
 PY_REFLEXION_CHAT_INSTRUCTION_V2 = "You are an AI Python assistant. You will be given your previous implementation of a function, a series of unit tests results, and your self-reflection on your previous implementation. Write your full implementation (restate the function signature)."
 PY_REFLEXION_FEW_SHOT_ADD = '''Example 1:
 [previous impl]:

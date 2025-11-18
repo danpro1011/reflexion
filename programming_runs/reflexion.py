@@ -80,6 +80,10 @@ def run_reflexion(
                 # TODO: COMMENTED OUT ASSERTION HERE
                 #assert isinstance(cur_func_impl, str)
 
+                if not isinstance(cur_func_impl, str) or not cur_func_impl.strip():
+                    print(f"WARNING: Failed to parse function implementation on iteration {cur_iter}.")
+                    break  # Exit reflexion loop for this problem
+
                 # check if all internal unit tests pass
                 is_passing, cur_feedback, _ = exe.execute(
                     cur_func_impl, tests_i)
