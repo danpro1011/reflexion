@@ -32,6 +32,18 @@ class AnyOpenAILLM:
                     )
                 ]
             ).content
+        
+
+class Reflector(AnyOpenAILLM):
+    def __init__(self, *args, **kwargs):
+        #TODO: Initialize the type of memory used
+        self.AnyOpenAILLM(args, kwargs)
+
+    def __call__(self, prompt:str):
+        """
+        We're creating a class wrapper around the reflector LLM that stores the 'strategy' reflections in a buffer 
+        and uses information from that buffer to inform the results it gives when prompted
+        """
 
 
 class LocalLLM:

@@ -88,6 +88,7 @@ class CoTAgent:
         self.cot_examples = cot_examples 
         self.reflect_examples = reflect_examples
 
+        #NOTE: For extension, all that changes is the memory of the reflector agent, and the end of trajectory prompt
         # Initialize LLMs with defaults if not provided
         if self_reflect_llm is None:
             if 'OPENAI_API_KEY' in os.environ:
@@ -161,6 +162,8 @@ class CoTAgent:
             self.reflections = [self.scratchpad]
             self.reflections_str = format_last_attempt(self.question , self.reflections[0])
         elif strategy == ReflexionStrategy.REFLEXION:
+            #NOTE: If you extend the number of trials, may have to put a hard cap on this, 
+            # but tbf, these take up such little space, likely doesn't really matter
             self.reflections += [self.prompt_reflection()]
             self.reflections_str = format_reflections(self.reflections)
         elif strategy == ReflexionStrategy.LAST_ATTEMPT_AND_REFLEXION:
@@ -357,6 +360,8 @@ class ReactReflectAgent(ReactAgent):
         self.reflections_str: str = ''
     
     def run(self, reset = True, reflect_strategy: ReflexionStrategy = ReflexionStrategy.REFLEXION) -> None:
+        #Ok, I see. The point of this condition is to NOT run again if the agent already got the correct answer
+        # reset has to be set to true to ensure this, and reflect just updates the agent's context window
         if (self.is_finished() or self.is_halted()) and not self.is_correct():
             self.reflect(reflect_strategy)
             # After reflection, always reset to start a fresh attempt with new reflections
