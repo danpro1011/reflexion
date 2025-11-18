@@ -50,7 +50,7 @@ try:
 except ImportError:
     from langchain.prompts import PromptTemplate
 from llm import AnyOpenAILLM
-from prompts import reflect_prompt, react_agent_prompt, react_reflect_agent_prompt, REFLECTION_HEADER, LAST_TRIAL_HEADER, REFLECTION_AFTER_LAST_TRIAL_HEADER
+from prompts import reflect_prompt, react_agent_prompt, react_reflect_agent_prompt, REFLECTION_HEADER, LAST_TRIAL_HEADER, REFLECTION_AFTER_LAST_TRIAL_HEADER, reflect_prompt_memory
 from prompts import cot_agent_prompt, cot_reflect_agent_prompt, cot_reflect_prompt, COT_INSTRUCTION, COT_REFLECT_INSTRUCTION
 from fewshots import WEBTHINK_SIMPLE6, REFLECTIONS, COT, COT_REFLECT
 
@@ -402,7 +402,38 @@ class ReactReflectAgent(ReactAgent):
                             reflections = self.reflections_str,
                             question = self.question,
                             scratchpad = self.scratchpad)
-   
+
+
+class ReactReflectMemAgent(ReactReflectAgent):
+    def __init__(self,
+                question: str,
+                key: str,
+                max_steps: int = 6,
+                agent_prompt: PromptTemplate = react_reflect_agent_prompt,
+                reflect_prompt: PromptTemplate = reflect_prompt_memory,
+                docstore = None,
+                react_llm = None,
+                reflect_llm = None,
+                strategy_memory: List[str] = [], #TODO: Something more than a list is likely needed for RAG stuff
+                ) -> None:
+
+        super().__init__(question, key, max_steps, agent_prompt, docstore, react_llm, reflect_prompt, reflect_llm)
+
+        self.strategy_mem = strategy_memory
+
+    def _retrieve_strategy_from_mem(self) -> List[str]:
+        #TODO: Actually implement a sophisticated method for doing this, likely some type of RAG smth
+        return self.strategy_mem
+
+    #Only thing that needs to change is the _build reflection prompt function, at least for now
+    def _build_reflection_prompt(self) -> str:
+        #We should be using the reflect_prompt_memory so now we also have to pass in the strategies that've been retrieved
+        return self.reflect_prompt.format(
+                            examples = self.reflect_examples,
+                            question = self.question,
+                            strategies = self._retrieve_strategy_from_mem(),
+                            scratchpad = truncate_scratchpad(self.scratchpad, tokenizer=self.enc))
+        
 
 ### String Stuff ###
 gpt2_enc = tiktoken.encoding_for_model("text-davinci-003")

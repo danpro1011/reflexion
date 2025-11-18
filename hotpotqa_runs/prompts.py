@@ -128,16 +128,25 @@ Question: {question}{scratchpad}
 
 Reflection:"""
 
-#TODO: Prompt for correct reflection
-
 #TODO: Redo the reflect instruction but now using the strategies generated from the reflection llm
+REFLECT_INSTRUCTION_UNIFIED = """You are an advanced reasoning agent that can improve based on self refection. You will be given a previous reasoning trial in which you were given access to an Docstore API environment and a question to answer. You were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>], or you used up your set number of reasoning steps. In a few sentences, Diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. Use complete sentences.  
+Here are some examples:
+{examples}
+
+And here are a list of previous, general, strategies that've worked in the past on similar problems
+{strategies}
+
+Previous trial:
+Question: {question}{scratchpad}
+
+Reflection:"""
 
 #TODO: What even is an example for this, also remember that sample from pdf trick thingy??
-POST_REFLECTION_INCORRECT = """You are an advanced reasoning agent that is capable of observing the thought process of another agent and finding novel and creative methods for improving its reasoning. 
-You will be given a previous reasoning trial in which from another agent that was given access to an Docstore API environment and a question to answer, as well as a set of reflections that you gave it. 
-The agent was unsuccessful in coming up with the correct answer, even with the help of your reflections. Clearly, you need to come up with better strategies to help the agent reason through his question.
-With the help of the correct answer, analyze why your reflections failed to help the model, and come up with general-purpose problem-solving strategies that you could've given to the agent to help it solve the problem. 
-Use complete sentences.  
+POST_REFLECTION_INCORRECT = """You are a highly capable, advanced reasoning agent that is capable of observing the thought process of another agent and guiding to find the best way to solve its problems. 
+You will be given a previous reasoning trial from another agent that was given access to an Docstore API environment and a question to answer, as well as a set of reflections that you gave it, as it was struggling to find the correct answer. 
+The agent was unsuccessful in coming up with the correct answer, even with the help of your reflections. You will now get to view and correct answer, and with it, you will consider why your reflections failed to help the model, 
+and what you could've said to help the reasoning model arrive at the correct answer. Then you will come up with novel and unique general-purpose problem solving strategies that you could've used to guide the model. 
+These general purpose strategies will be used by that same agent to solve different question of a similar type. 
 
 Previous trial:
 Question: {question}{scratchpad}
@@ -145,6 +154,11 @@ Question: {question}{scratchpad}
 Correct Answer : {correct_answer}
 """
 
+# GENERATE_STRATEGIES = """You are an expert, highly capable reasoning model with the uncanny ability to condense complicated multi-step reasoning
+
+# """
+
+#TODO: Prompt for correct reflection
 
 
 react_agent_prompt = PromptTemplate(
@@ -160,6 +174,17 @@ react_reflect_agent_prompt = PromptTemplate(
 reflect_prompt = PromptTemplate(
                         input_variables=["examples", "question", "scratchpad"],
                         template = REFLECT_INSTRUCTION,
+                        )
+
+#Prompts used for extension
+reflect_prompt_memory = PromptTemplate(
+                        input_variables=["examples", "question", "scratchpad", "strategies"],
+                        template = REFLECT_INSTRUCTION_UNIFIED,
+                        )
+
+strategies_prompt = PromptTemplate(
+                        input_variables=["question", "scratchpad", "correct_answer"],
+                        template = POST_REFLECTION_INCORRECT,
                         )
 
 
