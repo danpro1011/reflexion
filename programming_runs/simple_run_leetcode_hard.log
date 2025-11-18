@@ -1,0 +1,186 @@
+2025-11-18 14:14:34,918 - INFO - Processing example 1/296
+2025-11-18 14:14:36,263 - INFO - API call #1 for example 1
+2025-11-18 14:14:36,263 - INFO - Prompt: # Given two sorted arrays `nums1` and `nums2` of size `m` and `n` respectively, return the median of...
+2025-11-18 14:14:36,264 - INFO - Solution pass: False
+2025-11-18 14:14:36,264 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:36,264 - INFO - Evaluation result for example 1: FN
+2025-11-18 14:14:36,265 - INFO - Completed 1/296: acc = 0.0, Total API calls: 1
+2025-11-18 14:14:36,265 - INFO - Processing example 2/296
+2025-11-18 14:14:39,225 - INFO - API call #2 for example 2
+2025-11-18 14:14:39,225 - INFO - Prompt: # Given an input string (`s`) and a pattern (`p`), implement regular expression matching with suppor...
+2025-11-18 14:14:39,226 - INFO - Solution pass: False
+2025-11-18 14:14:39,226 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:39,226 - INFO - Evaluation result for example 2: FN
+2025-11-18 14:14:39,226 - INFO - Completed 2/296: acc = 0.0, Total API calls: 2
+2025-11-18 14:14:39,226 - INFO - Processing example 3/296
+2025-11-18 14:14:40,559 - INFO - API call #3 for example 3
+2025-11-18 14:14:40,559 - INFO - Prompt: # You are given a string `s` and an array of strings `words` of the same length. Return all starting...
+2025-11-18 14:14:40,561 - INFO - Solution pass: False
+2025-11-18 14:14:40,561 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:40,561 - INFO - Evaluation result for example 3: FN
+2025-11-18 14:14:40,562 - INFO - Completed 3/296: acc = 0.0, Total API calls: 3
+2025-11-18 14:14:40,563 - INFO - Processing example 4/296
+2025-11-18 14:14:41,574 - INFO - API call #4 for example 4
+2025-11-18 14:14:41,574 - INFO - Prompt: # Given a string containing just the characters `'('` and `')'`, find the length of the longest vali...
+2025-11-18 14:14:41,574 - INFO - Solution pass: False
+2025-11-18 14:14:41,574 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:41,574 - INFO - Evaluation result for example 4: FN
+2025-11-18 14:14:41,575 - INFO - Completed 4/296: acc = 0.0, Total API calls: 4
+2025-11-18 14:14:41,575 - INFO - Processing example 5/296
+2025-11-18 14:14:42,625 - INFO - API call #5 for example 5
+2025-11-18 14:14:42,625 - INFO - Prompt: # Given an unsorted integer array `nums`, find the smallest missing positive integer.
+# 
+# 
+# Exampl...
+2025-11-18 14:14:42,626 - INFO - Solution pass: False
+2025-11-18 14:14:42,627 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:42,627 - INFO - Evaluation result for example 5: FN
+2025-11-18 14:14:42,628 - INFO - Completed 5/296: acc = 0.0, Total API calls: 5
+2025-11-18 14:14:42,628 - INFO - Processing example 6/296
+2025-11-18 14:14:44,143 - INFO - API call #6 for example 6
+2025-11-18 14:14:44,143 - INFO - Prompt: # Given `n` non-negative integers representing an elevation map where the width of each bar is `1`, ...
+2025-11-18 14:14:44,144 - INFO - Solution pass: False
+2025-11-18 14:14:44,145 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:44,145 - INFO - Evaluation result for example 6: FN
+2025-11-18 14:14:44,146 - INFO - Completed 6/296: acc = 0.0, Total API calls: 6
+2025-11-18 14:14:44,146 - INFO - Processing example 7/296
+2025-11-18 14:14:45,781 - INFO - API call #7 for example 7
+2025-11-18 14:14:45,781 - INFO - Prompt: # Given an input string (`s`) and a pattern (`p`), implement wildcard pattern matching with support ...
+2025-11-18 14:14:45,783 - INFO - Solution pass: False
+2025-11-18 14:14:45,783 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:45,783 - INFO - Evaluation result for example 7: FN
+2025-11-18 14:14:45,783 - INFO - Completed 7/296: acc = 0.0, Total API calls: 7
+2025-11-18 14:14:45,784 - INFO - Processing example 8/296
+2025-11-18 14:14:48,547 - INFO - API call #8 for example 8
+2025-11-18 14:14:48,547 - INFO - Prompt: # The n-queens puzzle is the problem of placing `n` queens on an `n x n` chessboard such that no two...
+2025-11-18 14:14:48,549 - INFO - Solution pass: False
+2025-11-18 14:14:48,549 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:48,549 - INFO - Evaluation result for example 8: FN
+2025-11-18 14:14:48,550 - INFO - Completed 8/296: acc = 0.0, Total API calls: 8
+2025-11-18 14:14:48,550 - INFO - Processing example 9/296
+2025-11-18 14:14:50,079 - INFO - API call #9 for example 9
+2025-11-18 14:14:50,079 - INFO - Prompt: # The n-queens puzzle is the problem of placing `n` queens on an `n x n` chessboard such that no two...
+2025-11-18 14:14:50,080 - INFO - Solution pass: False
+2025-11-18 14:14:50,080 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:50,080 - INFO - Evaluation result for example 9: FN
+2025-11-18 14:14:50,080 - INFO - Completed 9/296: acc = 0.0, Total API calls: 9
+2025-11-18 14:14:50,080 - INFO - Processing example 10/296
+2025-11-18 14:14:51,104 - INFO - API call #10 for example 10
+2025-11-18 14:14:51,105 - INFO - Prompt: # The set `[1, 2, 3, ..., n]` contains a total of `n!` unique permutations.
+# 
+# By listing and labe...
+2025-11-18 14:14:51,106 - INFO - Solution pass: False
+2025-11-18 14:14:51,106 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:51,106 - INFO - Evaluation result for example 10: FN
+2025-11-18 14:14:51,107 - INFO - Completed 10/296: acc = 0.0, Total API calls: 10
+2025-11-18 14:14:51,107 - INFO - Processing example 11/296
+2025-11-18 14:14:52,030 - INFO - API call #11 for example 11
+2025-11-18 14:14:52,030 - INFO - Prompt: # A valid number can be split up into these components (in order):
+# A decimal number or an integer....
+2025-11-18 14:14:52,032 - INFO - Solution pass: False
+2025-11-18 14:14:52,032 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:52,032 - INFO - Evaluation result for example 11: FN
+2025-11-18 14:14:52,033 - INFO - Completed 11/296: acc = 0.0, Total API calls: 11
+2025-11-18 14:14:52,033 - INFO - Processing example 12/296
+2025-11-18 14:14:53,971 - INFO - API call #12 for example 12
+2025-11-18 14:14:53,971 - INFO - Prompt: # Given an array of words and a width maxWidth, format the text such that each line has exactly maxW...
+2025-11-18 14:14:53,973 - INFO - Solution pass: False
+2025-11-18 14:14:53,973 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:53,973 - INFO - Evaluation result for example 12: FN
+2025-11-18 14:14:53,974 - INFO - Completed 12/296: acc = 0.0, Total API calls: 12
+2025-11-18 14:14:53,974 - INFO - Processing example 13/296
+2025-11-18 14:14:55,404 - INFO - API call #13 for example 13
+2025-11-18 14:14:55,404 - INFO - Prompt: # Given two strings `word1` and `word2`, return the minimum number of operations required to convert...
+2025-11-18 14:14:55,405 - INFO - Solution pass: False
+2025-11-18 14:14:55,405 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:55,405 - INFO - Evaluation result for example 13: FN
+2025-11-18 14:14:55,405 - INFO - Completed 13/296: acc = 0.0, Total API calls: 13
+2025-11-18 14:14:55,405 - INFO - Processing example 14/296
+2025-11-18 14:14:58,476 - INFO - API call #14 for example 14
+2025-11-18 14:14:58,476 - INFO - Prompt: # Given two strings `s` and `t`, return the minimum window in `s` which will contain all the charact...
+2025-11-18 14:14:58,477 - INFO - Solution pass: False
+2025-11-18 14:14:58,477 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:58,477 - INFO - Evaluation result for example 14: FN
+2025-11-18 14:14:58,478 - INFO - Completed 14/296: acc = 0.0, Total API calls: 14
+2025-11-18 14:14:58,478 - INFO - Processing example 15/296
+2025-11-18 14:14:59,812 - INFO - API call #15 for example 15
+2025-11-18 14:14:59,812 - INFO - Prompt: # Given an array of integers `heights` representing the histogram's bar height where the width of ea...
+2025-11-18 14:14:59,814 - INFO - Solution pass: False
+2025-11-18 14:14:59,814 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:14:59,814 - INFO - Evaluation result for example 15: FN
+2025-11-18 14:14:59,815 - INFO - Completed 15/296: acc = 0.0, Total API calls: 15
+2025-11-18 14:14:59,815 - INFO - Processing example 16/296
+2025-11-18 14:15:01,753 - INFO - API call #16 for example 16
+2025-11-18 14:15:01,754 - INFO - Prompt: # Given a `rows x cols` binary `matrix` filled with `0`'s and `1`'s, find the largest rectangle cont...
+2025-11-18 14:15:01,755 - INFO - Solution pass: False
+2025-11-18 14:15:01,755 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:01,755 - INFO - Evaluation result for example 16: FN
+2025-11-18 14:15:01,755 - INFO - Completed 16/296: acc = 0.0, Total API calls: 16
+2025-11-18 14:15:01,755 - INFO - Processing example 17/296
+2025-11-18 14:15:03,597 - INFO - API call #17 for example 17
+2025-11-18 14:15:03,597 - INFO - Prompt: # We can scramble a string s to get a string t using the following algorithm:
+# If the length of the...
+2025-11-18 14:15:03,598 - INFO - Solution pass: False
+2025-11-18 14:15:03,598 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:03,598 - INFO - Evaluation result for example 17: FN
+2025-11-18 14:15:03,599 - INFO - Completed 17/296: acc = 0.0, Total API calls: 17
+2025-11-18 14:15:03,599 - INFO - Processing example 18/296
+2025-11-18 14:15:05,236 - INFO - API call #18 for example 18
+2025-11-18 14:15:05,237 - INFO - Prompt: # Given two strings `s` and `t`, return the number of distinct subsequences of `s` which equals `t`....
+2025-11-18 14:15:05,238 - INFO - Solution pass: False
+2025-11-18 14:15:05,238 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:05,238 - INFO - Evaluation result for example 18: FN
+2025-11-18 14:15:05,239 - INFO - Completed 18/296: acc = 0.0, Total API calls: 18
+2025-11-18 14:15:05,239 - INFO - Processing example 19/296
+2025-11-18 14:15:08,078 - INFO - API call #19 for example 19
+2025-11-18 14:15:08,079 - INFO - Prompt: # You are given an array `prices` where `prices[i]` is the price of a given stock on the `ith` day.
+...
+2025-11-18 14:15:08,082 - INFO - Solution pass: False
+2025-11-18 14:15:08,083 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:08,083 - INFO - Evaluation result for example 19: FN
+2025-11-18 14:15:08,090 - INFO - Completed 19/296: acc = 0.0, Total API calls: 19
+2025-11-18 14:15:08,093 - INFO - Processing example 20/296
+2025-11-18 14:15:10,561 - INFO - API call #20 for example 20
+2025-11-18 14:15:10,562 - INFO - Prompt: # A transformation sequence from word `beginWord` to word `endWord` using a dictionary `wordList` is...
+2025-11-18 14:15:10,563 - INFO - Solution pass: False
+2025-11-18 14:15:10,564 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:10,564 - INFO - Evaluation result for example 20: FN
+2025-11-18 14:15:10,565 - INFO - Completed 20/296: acc = 0.0, Total API calls: 20
+2025-11-18 14:15:10,565 - INFO - Processing example 21/296
+2025-11-18 14:15:12,403 - INFO - API call #21 for example 21
+2025-11-18 14:15:12,404 - INFO - Prompt: # A transformation sequence from word `beginWord` to word `endWord` using a dictionary `wordList` is...
+2025-11-18 14:15:12,404 - INFO - Solution pass: False
+2025-11-18 14:15:12,405 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:12,405 - INFO - Evaluation result for example 21: FN
+2025-11-18 14:15:12,409 - INFO - Completed 21/296: acc = 0.0, Total API calls: 21
+2025-11-18 14:15:12,409 - INFO - Processing example 22/296
+2025-11-18 14:15:14,591 - INFO - API call #22 for example 22
+2025-11-18 14:15:14,592 - INFO - Prompt: # Given an unsorted array of integers `nums`, return the length of the longest consecutive elements ...
+2025-11-18 14:15:14,593 - INFO - Solution pass: False
+2025-11-18 14:15:14,593 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:14,593 - INFO - Evaluation result for example 22: FN
+2025-11-18 14:15:14,594 - INFO - Completed 22/296: acc = 0.0, Total API calls: 22
+2025-11-18 14:15:14,594 - INFO - Processing example 23/296
+2025-11-18 14:15:15,989 - INFO - API call #23 for example 23
+2025-11-18 14:15:15,989 - INFO - Prompt: # Given a string `s`, partition `s` such that every substring of the partition is a palindrome.
+# 
+#...
+2025-11-18 14:15:15,990 - INFO - Solution pass: False
+2025-11-18 14:15:15,990 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:15,990 - INFO - Evaluation result for example 23: FN
+2025-11-18 14:15:15,991 - INFO - Completed 23/296: acc = 0.0, Total API calls: 23
+2025-11-18 14:15:15,991 - INFO - Processing example 24/296
+2025-11-18 14:15:17,216 - INFO - API call #24 for example 24
+2025-11-18 14:15:17,216 - INFO - Prompt: # There are `n` children standing in a line. Each child is assigned a rating value given in the inte...
+2025-11-18 14:15:17,216 - INFO - Solution pass: False
+2025-11-18 14:15:17,217 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:17,217 - INFO - Evaluation result for example 24: FN
+2025-11-18 14:15:17,217 - INFO - Completed 24/296: acc = 0.0, Total API calls: 24
+2025-11-18 14:15:17,217 - INFO - Processing example 25/296
+2025-11-18 14:15:18,465 - INFO - API call #25 for example 25
+2025-11-18 14:15:18,466 - INFO - Prompt: # Given a string `s` and a dictionary of strings `wordDict`, add spaces in `s` to construct a senten...
+2025-11-18 14:15:18,467 - INFO - Solution pass: False
+2025-11-18 14:15:18,467 - INFO - Unit tests passed: True (0/0)
+2025-11-18 14:15:18,467 - INFO - Evaluation result for example 25: FN
+2025-11-18 14:15:18,469 - INFO - Completed 25/296: acc = 0.0, Total API calls: 25
+2025-11-18 14:15:18,469 - INFO - Processing example 26/296

@@ -12,7 +12,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("simple_run.log"),
+        logging.FileHandler("simple_run_leetcode_hard.log"),
         logging.StreamHandler()
     ]
 )
@@ -48,42 +48,44 @@ def run_simple(
         logger.info(f"Processing example {i+1}/{num_items}")
         
         while cur_pass < pass_at_k:
-            # Generate function implementation
             cur_func_impl = gen.func_impl(item["prompt"], model, "simple")
             total_api_calls += 1
             logger.info(f"API call #{total_api_calls} for example {i+1}")
-            logger.info(f"Prompt: {item['prompt'][:100]}...")  # Log first 100 chars
-            
+            logger.info(f"Prompt: {item['prompt'][:100]}...")
+
             # Log token usage if available
             if hasattr(model, 'last_token_usage'):
                 logger.info(f"Token usage: {model.last_token_usage}")
-            
+
             print(f"cur_func_impl: {cur_func_impl} (type: {type(cur_func_impl)})")
             assert isinstance(cur_func_impl, str)
             print(f"\nGenerated code for example {i+1}:\n{cur_func_impl}\n")
-            
-            # Use evaluate instead of execute for HumanEval
-            is_passing = exe.evaluate(item["entry_point"], cur_func_impl, item["test"], timeout=20 if is_leetcode else 10)
-            
-            # Log results
-            logger.info(f"Solution pass: {is_passing}")
-            
-            # For HumanEval, solution_pass and unit_test_pass are the same
-            # (since evaluate runs the check function which includes all tests)
-            unit_test_pass = is_passing
-            solution_pass = is_passing
-            
-            # Calculate TP/FP/FN/TN classification
+
+            # Evaluate solution correctness (HumanEval style)
+            solution_pass = exe.evaluate(item["entry_point"], cur_func_impl, item["test"], timeout=20 if is_leetcode else 10)
+            logger.info(f"Solution pass: {solution_pass}")
+            print(f"Solution passed: {solution_pass}")
+
+            # If you have unit tests as a list, run execute for per-test results
+            if "test" in item:
+                result = exe.execute(cur_func_impl, item["test"], timeout=20 if is_leetcode else 10)
+                unit_test_pass = all(result.state)
+                logger.info(f"Unit tests passed: {unit_test_pass} ({sum(result.state)}/{len(result.state)})")
+                print(f"Unit tests passed: {unit_test_pass} ({sum(result.state)}/{len(result.state)})")
+            else:
+                unit_test_pass = solution_pass  # fallback for HumanEval
+
+            # TP/FP/FN/TN classification
             if unit_test_pass and solution_pass:
                 result_type = "TP"
             elif not unit_test_pass and solution_pass:
-                result_type = "FN"
-            elif unit_test_pass and not solution_pass:
                 result_type = "FP"
+            elif unit_test_pass and not solution_pass:
+                result_type = "FN"
             else:
                 result_type = "TN"
             logger.info(f"Evaluation result for example {i+1}: {result_type}")
-            
+
             if solution_pass:
                 is_solved = True
                 num_success += 1
