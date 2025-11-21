@@ -3,6 +3,21 @@ try:
 except ImportError:
     from langchain.prompts import PromptTemplate
 
+DEBATE_INITIAL_INSTRUCTION = """You are Agent {agent_id} in a small team debating an answer. Read the context, reason step by step, and end with a single Finish[answer] action.
+Context:
+{context}
+
+Question: {question}"""
+
+DEBATE_FOLLOWUP_INSTRUCTION = """You are Agent {agent_id} continuing a debate. Other agents have proposed answers and rationales. Identify any mistakes, adopt good ideas, and update your own reasoning. Keep it concise and end with a single Finish[answer].
+
+Other agents said:
+{peer_responses}
+
+Context:
+{context}
+Question: {question}"""
+
 COT_INSTRUCTION = """Solve a question answering task by having a Thought, then Finish with your answer. Thought can reason about the current situation. Finish[answer] returns the answer and finishes the task. You will be given context that you should use to help you answer the question.
 Here are some examples:
 {examples}
@@ -141,5 +156,14 @@ reflect_prompt = PromptTemplate(
                         template = REFLECT_INSTRUCTION,
                         )
 
+debate_initial_prompt = PromptTemplate(
+                        input_variables=["agent_id", "context", "question"],
+                        template=DEBATE_INITIAL_INSTRUCTION,
+                        )
+
+debate_followup_prompt = PromptTemplate(
+                        input_variables=["agent_id", "peer_responses", "context", "question"],
+                        template=DEBATE_FOLLOWUP_INSTRUCTION,
+                        )
 
 
