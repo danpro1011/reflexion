@@ -10,12 +10,12 @@ except ImportError:
     from langchain.chat_models import ChatOpenAI
 
 try:
-    from langchain_community.utilities import WikipediaAPIWrapper as Wikipedia
+    from langchain_community.docstore.wikipedia import Wikipedia  # ✅ correct
 except ImportError:
     try:
-        from langchain.utilities import WikipediaAPIWrapper as Wikipedia
+        from langchain.docstore.wikipedia import Wikipedia        # ✅ fallback
     except ImportError:
-        from langchain import Wikipedia
+        from langchain import Wikipedia                           # legacy fallback
 
 try:
     from langchain_core.language_models.llms import BaseLLM
@@ -277,6 +277,7 @@ class ReactAgent:
             return
 
         if action_type == 'Search':
+            print("Agent search")
             try:
                 self.scratchpad += format_step(self.docstore.search(argument))
             except Exception as e:
@@ -284,6 +285,7 @@ class ReactAgent:
                 self.scratchpad += f'Could not find that page, please try again.'
             
         elif action_type == 'Lookup':
+            print("Agent lookup")
             try:
                 self.scratchpad += format_step(self.docstore.lookup(argument))
             except ValueError:
