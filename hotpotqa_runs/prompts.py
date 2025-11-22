@@ -199,9 +199,7 @@ Affirmative side arguing:{affirmative_response}
 
 Negative side arguing: {negative_response}
 You, as the moderator, will evaluate both sides' answers and determine if there is a clear preference for an answer candidate. If so, please summarize your reasons for supporting affirmative/negative side and give the final answer that you think is correct, and the debate will conclude. 
-If not, the debate will continue to the next round. Now please output your answer in json format, with the format as follows: 
-
-{\"Whether there is a preference\": \"Yes or No\", \"Supported Side\": \"Affirmative or Negative\", \"Reason\": \"\", \"debate_answer\": \"\"}. Please strictly output in JSON format, do not output irrelevant content."""
+If not, the debate will continue to the next round."""
  
 
 
@@ -243,16 +241,16 @@ debate_affirmative_reflection_prompt = PromptTemplate(
                                 )
 
 debate_negative_reflection_prompt = PromptTemplate(
-                                input_variables= ["question", "scratchpad", "debate_response"],
+                                input_variables= ["question", "scratchpad", "debator_response"],
                                 template=DEBATOR_NEGATIVE_PROMPT_REFLECTION
                                 )
 
 debator_response_prompt = PromptTemplate( 
-                                input_variables=["opponent_reponse"],
+                                input_variables=["debator_response"],
                                 template=DEBATOR_REPLY
                                 )
 
-judge_meta_reflection_prompt = PromptTemplate(template=JUDGE_META_PROMPT_REFLECTION)
+judge_meta_reflection_prompt = PromptTemplate(template=JUDGE_META_PROMPT_REFLECTION, input_variables=[])
 
 judge_end_of_round_reflection_prompt = PromptTemplate(
                                         input_variables=["affirmative_response", "negative_response"],

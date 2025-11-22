@@ -50,6 +50,7 @@ try:
 except ImportError:
     from langchain.prompts import PromptTemplate
 from llm import AnyOpenAILLM
+from debate import DebateCoordinator
 from prompts import reflect_prompt, react_agent_prompt, react_reflect_agent_prompt, REFLECTION_HEADER, LAST_TRIAL_HEADER, REFLECTION_AFTER_LAST_TRIAL_HEADER
 from prompts import cot_agent_prompt, cot_reflect_agent_prompt, cot_reflect_prompt, COT_INSTRUCTION, COT_REFLECT_INSTRUCTION
 from fewshots import WEBTHINK_SIMPLE6, REFLECTIONS, COT, COT_REFLECT
@@ -417,7 +418,7 @@ class ReactDebateReflectAgent(ReactReflectAgent):
         # TODO: Initialize the reflect llm to be the debate class LLM
         if reflect_llm is None:
             if 'OPENAI_API_KEY' in os.environ:
-                self.reflect_llm = AnyOpenAILLM(
+                reflect_llm = AnyOpenAILLM(
                     temperature=0,
                     max_tokens=250,
                     model_name="gpt-3.5-turbo",
@@ -425,11 +426,18 @@ class ReactDebateReflectAgent(ReactReflectAgent):
             else:
                 raise ValueError("reflect_llm must be provided or OPENAI_API_KEY must be set")
         else:
-            self.reflect_llm = reflect_llm
+            reflect_llm = reflect_llm
+
+        self.debate_reflector = DebateCoordinator(question=question,answer_key=key,llm = reflect_llm)
         self.reflect_prompt = reflect_prompt
         self.reflect_examples = REFLECTIONS
         self.reflections: List[str] = []
         self.reflections_str: str = ''
+
+    def prompt_reflection(self) -> str:
+        return self.debate_reflector.run()
+
+
 
     
 

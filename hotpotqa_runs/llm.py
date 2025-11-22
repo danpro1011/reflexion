@@ -32,6 +32,9 @@ class AnyOpenAILLM:
                     )
                 ]
             ).content
+            
+    def invoke(self, prompt:str):
+        return self.model.invoke(prompt)
 
 
 class LocalLLM:
