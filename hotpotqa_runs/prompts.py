@@ -181,7 +181,7 @@ The other debator came up with the answer {debator_response}. You disagree with 
 """
 
 DEBATOR_REPLY = """The other debator responded with {debator_response}
-Do you agree with my perspective? Please provide your reasons and answer."""
+Do you agree with that perspective? Please provide your reasons and answer."""
 
 #Prompts to initialize the judge as well as the moderator prompts
 

@@ -399,8 +399,8 @@ class ReactReflectAgent(ReactAgent):
                             scratchpad = self.scratchpad)
    
 
-class ReactMultiAgentDebateAgent(ReactReflectAgent):
-    #All that needs to change for this class is that the _build_reflection prompt changes
+class ReactDebateReflectAgent(ReactReflectAgent):
+    #All that needs to change for this class is prompt_reflection function, this should utilize the debate.py stuff
     def __init__(self,
                  question: str,
                  key: str,
