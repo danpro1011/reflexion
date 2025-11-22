@@ -399,6 +399,40 @@ class ReactReflectAgent(ReactAgent):
                             scratchpad = self.scratchpad)
    
 
+class ReactMultiAgentDebateAgent(ReactReflectAgent):
+    #All that needs to change for this class is that the _build_reflection prompt changes
+    def __init__(self,
+                 question: str,
+                 key: str,
+                 max_steps: int = 6,
+                 agent_prompt: PromptTemplate = react_reflect_agent_prompt,
+                 reflect_prompt: PromptTemplate = reflect_prompt,
+                 docstore = None,
+                 react_llm = None,
+                 reflect_llm = None,
+                 ) -> None:
+
+        super().__init__(question, key, max_steps, agent_prompt, docstore, react_llm)
+
+        # TODO: Initialize the reflect llm to be the debate class LLM
+        if reflect_llm is None:
+            if 'OPENAI_API_KEY' in os.environ:
+                self.reflect_llm = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=250,
+                    model_name="gpt-3.5-turbo",
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+            else:
+                raise ValueError("reflect_llm must be provided or OPENAI_API_KEY must be set")
+        else:
+            self.reflect_llm = reflect_llm
+        self.reflect_prompt = reflect_prompt
+        self.reflect_examples = REFLECTIONS
+        self.reflections: List[str] = []
+        self.reflections_str: str = ''
+
+    
+
 ### String Stuff ###
 gpt2_enc = tiktoken.encoding_for_model("text-davinci-003")
 

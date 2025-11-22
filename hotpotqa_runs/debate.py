@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from agents import normalize_answer
 from llm import AnyOpenAILLM
-from prompts import debate_followup_prompt, debate_initial_prompt
+from prompts import debate_meta_prompt_reflection_prompt, judge
 
 
 FINISH_PATTERN = re.compile(r"Finish\\[(.*?)\\]", re.IGNORECASE)
@@ -43,6 +43,7 @@ class DebateResponse:
         }
 
 
+#TODO: Rewrite this as a class that inherits the LLM rather than as an agent class
 class DebateAgent:
     def __init__(
         self,
@@ -89,22 +90,24 @@ class DebateAgent:
         )
 
 
+#TODO: Rewrite this as a class that inherits the LLM rather than as an agent class
 class DebateCoordinator:
     def __init__(
         self,
         question: str,
         context: str,
         answer_key: str,
-        num_agents: int = 3,
-        num_rounds: int = 3,
+        num_agents: int = 2,
+        max_num_rounds: int = 10, #This is the hard max, not recommended or average number of runs
         llm_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         if num_agents < 1:
             raise ValueError("num_agents must be >= 1 for debate.")
+        
         self.question = question
         self.context = context
         self.answer_key = answer_key
-        self.num_rounds = max(1, num_rounds)
+        self.max_num_rounds = max(1, max_num_rounds)
         self.agents = self._build_agents(num_agents, llm_kwargs or {})
 
     def _build_agents(self, num_agents: int, llm_kwargs: Dict[str, Any]) -> List[DebateAgent]:
@@ -129,6 +132,7 @@ class DebateCoordinator:
         rounds.append(first_round)
 
         # Subsequent rounds: debate using peer responses
+        # Way its described in paper, rounds continue until the judge finds the current debate satisfactory
         for round_idx in range(2, self.num_rounds + 1):
             next_round: List[DebateResponse] = []
             for agent in self.agents:
@@ -138,6 +142,9 @@ class DebateCoordinator:
 
         final_round = rounds[-1]
         majority_answer, normalized_answer, vote_count = self._majority_vote(final_round)
+
+        # After debate is finished, the judge switches to 'extractor' mode and determines the right answer -> 
+        # syke that's actually just the same LM, but it's multiple parts of the same prompt
 
         return {
             "rounds": [[resp.to_dict() for resp in round_turn] for round_turn in rounds],
