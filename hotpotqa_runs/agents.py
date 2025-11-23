@@ -435,7 +435,7 @@ class ReactDebateReflectAgent(ReactReflectAgent):
         self.reflections_str: str = ''
 
     def prompt_reflection(self) -> str:
-        return self.debate_reflector.run()
+        return self.debate_reflector.run(self.scratchpad)
 
 
 

@@ -180,25 +180,29 @@ Question: {question}{scratchpad}
 The other debator came up with the answer {debator_response}. You disagree with this answer. Provide your answer and reasons.
 """
 
-DEBATOR_REPLY = """The other debator responded with {debator_response}
+DEBATOR_REPLY = """{debate_log}
+
+The other debator responded with {debator_response}
 Do you agree with that perspective? Please provide your reasons and answer."""
 
 #Prompts to initialize the judge as well as the moderator prompts
 
-JUDGE_META_PROMPT_REFLECTION = """You are a moderator. There will be two debaters involved in a debate. They will present their answers and discuss their perspectives on the following topic:
+JUDGE_META_PROMPT_REFLECTION = """You are a moderator. There will be multiple debaters involved in a debate. They will present their answers and discuss their perspectives on the following topic:
 They will be given a previous reasoning trial in which an advanced reasoning agent was given access to an Docstore API environment and a question to answer. The agent was unsuccessful in answering the question either because it guessed the wrong answer with Finish[<answer>], or it used up its set number of reasoning steps. 
 In a few sentences, they will diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure.   
 
-At the end of each round, you will evaluate answers and decide which is correct.
+At the end of each round, you will evaluate answers and decide which is correct. Output your response in the following json format. 
+{{\"preference_found\": True or False, \"reason\": \"\", \"final_verdict\": \"\"}}. 
+Please strictly output in JSON format, do not output irrelevant content.
 """
 
-#TODO: Use the actual langchain library to enforce output format, fix this nightmare that I'm currently looking at
-JUDGE_END_OF_ROUND_PROMPT_REFLECTION = """Now the ##round## round of debate for both sides has ended.
+#TODO: This prompt only contains the last responses given by each of the debators, worth tyring to actually contain the whole debate, or high level summary of it
+JUDGE_END_OF_ROUND_PROMPT_REFLECTION = """Now the {round_num} round of debate for both sides has ended.
 Affirmative side arguing:{affirmative_response}
 
 
 Negative side arguing: {negative_response}
-You, as the moderator, will evaluate both sides' answers and determine if there is a clear preference for an answer candidate. If so, please summarize your reasons for supporting affirmative/negative side and give the final answer that you think is correct, and the debate will conclude. 
+You, as the moderator, will evaluate both sides' answers and determine if there is a clear preference for an answer candidate. If so, please summarize your reasons for supporting affirmative/negative side. Then summarize the verdict that you feel is correct, and the debate will conclude. 
 If not, the debate will continue to the next round."""
  
 
@@ -246,13 +250,13 @@ debate_negative_reflection_prompt = PromptTemplate(
                                 )
 
 debator_response_prompt = PromptTemplate( 
-                                input_variables=["debator_response"],
+                                input_variables=["debate_log","debator_response"],
                                 template=DEBATOR_REPLY
                                 )
 
 judge_meta_reflection_prompt = PromptTemplate(template=JUDGE_META_PROMPT_REFLECTION, input_variables=[])
 
 judge_end_of_round_reflection_prompt = PromptTemplate(
-                                        input_variables=["affirmative_response", "negative_response"],
+                                        input_variables=["affirmative_response", "negative_response", "round_num"],
                                         template=JUDGE_END_OF_ROUND_PROMPT_REFLECTION
                                         )

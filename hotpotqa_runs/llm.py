@@ -10,6 +10,9 @@ try:
 except ImportError:
     from langchain_core.messages import HumanMessage
 
+from dotenv import load_dotenv
+load_dotenv()
+
 class AnyOpenAILLM:
     def __init__(self, *args, **kwargs):
         # Determine model type from the kwargs
@@ -32,10 +35,10 @@ class AnyOpenAILLM:
                     )
                 ]
             ).content
-            
-    def invoke(self, prompt:str):
-        return self.model.invoke(prompt)
-
+        
+    #Seperate function from the base 'call' method in the case where I want to pass in the meta prompt and don't need the __call__ wrapping
+    def query(self, query):
+        return self.model(query).content
 
 class LocalLLM:
     """Local HuggingFace model wrapper"""

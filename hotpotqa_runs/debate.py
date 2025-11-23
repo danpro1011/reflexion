@@ -1,7 +1,9 @@
 import re
+import os
+import json
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
-from pydantic import BaseModel
+from typing import Any, Dict, List, Optional, Tuple, TypedDict
+import pprint as pp
 
 from llm import AnyOpenAILLM
 from prompts import debate_meta_reflection_prompt, debator_response_prompt, debate_affirmative_reflection_prompt, debate_negative_reflection_prompt, judge_meta_reflection_prompt, judge_end_of_round_reflection_prompt
@@ -15,6 +17,15 @@ try:
     from langchain.schema import HumanMessage, SystemMessage
 except ImportError:
     from langchain_core.messages import HumanMessage, SystemMessage
+
+try:
+    from langchain_openai import ChatOpenAI, OpenAI
+except ImportError:
+    from langchain.chat_models import ChatOpenAI
+    from langchain.llms import OpenAI
+
+from dotenv import load_dotenv
+load_dotenv()
 
 
 FINISH_PATTERN = re.compile(r"Finish\\[(.*?)\\]", re.IGNORECASE)
@@ -39,8 +50,9 @@ class DebateLLM:
         self,
         question: str,
         scratchpad: str,
+        debate_id: int,
         llm: Optional[AnyOpenAILLM] = None,
-        system_prompt: PromptTemplate =  debate_meta_reflection_prompt.format(examples = REFLECTIONS) #Should I be calling .format()?
+        system_prompt: PromptTemplate =  debate_meta_reflection_prompt
     ) -> None:
         self.question = question
         self.scratchpad = scratchpad
@@ -48,27 +60,46 @@ class DebateLLM:
             temperature=0.2,
             max_tokens=256,
             model_name="gpt-3.5-turbo",
-            model_kwargs={"stop": "\n"}, #Why???
+            model_kwargs={"stop": "\n"}, #Makes it stop after a new line, to limit long responses
         )
+        self.debate_id = debate_id
 
-        # 'System prompt' so that LLM actually debates when prompted. Response doesn't matter
-        self.llm([SystemMessage(content=system_prompt)])
+        #This stays constant so convienient to just save it here 
+        self.system_prompt = SystemMessage(content=system_prompt.format(examples=REFLECTIONS))
 
     def initial_response(self, initial_response_prompt: PromptTemplate, prompt_kwargs) -> str:
-        #NOTE: kwags doing a lot of heavy lifting here, maybe don't want it designed in exactly this manner
-        prompt = initial_response_prompt.format(kwargs=prompt_kwargs)
+        #NOTE: kwags doing a lot of heavy lifting here, maybe don't want it designed in exactly this manner.
+        #Reason I'm doing it like this is because number of kwargs changes based on whether is the affirmative or disagreeing debator debating
+        prompt = initial_response_prompt.format(**prompt_kwargs)
+        initial_message = HumanMessage(content = prompt)
         
-        completion = self.llm(prompt)
-        return self._build_response(completion, round_idx=1)
+        response = self.llm.query([self.system_prompt, initial_message])
+
+        return response
 
     # The prompt for this should pretty much always be the same, so I don't see the need to pass it in as an argument
-    def debate_response(self, peer_responses: str) -> str:
+    def debate_response(self, debator_response: str, debate_history: str) -> str:
         #NOTE: This is just written for two agents, things gotta change to run with multiple agents
+        debate_history = self._format_debate_history(debate_history)
         prompt = debator_response_prompt.format(
-                opponent_response = peer_responses
+                debator_response = debator_response,
+                debate_log = debate_history
         )
-        completion = self.llm(prompt)
-        return self._build_response(completion)
+
+        debate_history = HumanMessage(content = prompt)
+        response = self.llm.query([self.system_prompt, debate_history])
+
+        return response
+    
+    def _format_debate_history(self, debate_history):
+        pattern = rf"(Debator {self.debate_id}:\s*)(.*?)(?=\nDebator \d+:|\Z)"
+        
+        def repl(m):
+            response = m.group(2)    # original response text
+            return "Your response: " + response.strip()
+        
+        return re.sub(pattern, repl, debate_history, flags=re.DOTALL)
+
 
     #TODO: Look again at what information we actually need
     # def _build_response(self, completion: str, round_idx: int) -> DebateResponse:
@@ -82,8 +113,7 @@ class DebateLLM:
     #     )
 
 
-@dataclass
-class JudgeResponse(BaseModel):
+class JudgeResponse(TypedDict):
     #{\"Whether there is a preference\": \"Yes or No\", \"Supported Side\": \"Affirmative or Negative\", \"Reason\": \"\", \"debate_answer\": \"\"}. Please strictly output in JSON format, do not output irrelevant content.
     # I'm really struggling to see the difference between 'supported side' and 'debate answer' here
     debate_finished: bool
@@ -117,32 +147,30 @@ class DebateCoordinator:
         self.question = question
         self.answer_key = answer_key
         self.max_num_rounds = max(1, max_num_rounds)
-        self.debators = []
+        self.round_number = 0
+        self.debate_history = ""
 
         # Enforcing that all judge outputs follow the desired format
         #I think don't use this llm wrapper just for here
-        self.llm = llm or AnyOpenAILLM(
+        self.judge_llm = llm or AnyOpenAILLM(
             temperature=0,
             max_tokens=256,
             model_name="gpt-3.5-turbo",
-        ).with_structured_output(JudgeResponse)
+        )
+        #NOTE: Do we want the 'stop' thingy here too or not
 
-        
-        #Setup the system prompt for the judge
-        #NOTE: Way this is currently setup, judge isn't able to view the reasoning traces, which is probbaly not optimal
-        self.llm.invoke([SystemMessage(judge_meta_reflection_prompt.format())])
-            
 
-    def _build_debators(self, num_debators: int, scratchpad:str, llm_kwargs: Dict[str, Any]) -> List[DebateLLM]:
+    def _build_debators(self, num_debators: int, scratchpad:str, llm_kwargs: Dict[str, Any] = None) -> List[DebateLLM]:
         debators: List[DebateLLM] = []
         #TODO: question scratchpad can either be added here or in inital repsonse 
-        for idx in range(num_debators):
+        for indx in range(num_debators):
             llm = AnyOpenAILLM(**llm_kwargs) if llm_kwargs else None
             debators.append(
                 DebateLLM(
                     question=self.question,
                     scratchpad=scratchpad,
                     llm=llm,
+                    debate_id=indx
                 )
             )
         return debators
@@ -153,20 +181,28 @@ class DebateCoordinator:
         # just based off of how its designed right now
         rounds: List[List] = []
 
-        self.debators = self._build_debators(2,scratchpad) 
+        debators = self._build_debators(2,scratchpad) 
+        
+        #TODO: Manage the context of the debator agents as well
 
         # Debators first have to propose their ideas
         first_round = []
-        for idx, debator in enumerate(self.debators):
+        for idx, debator in enumerate(debators):
             if idx == 0:
                 #First agent is the only one that doesn't need to respond to the others
                 kwargs = {"question": debator.question, "scratchpad": debator.scratchpad}
-                response = debator.inital_response(initial_response_template = debate_affirmative_reflection_prompt, kwags=kwargs)
+    # def initial_response(self, initial_response_prompt: PromptTemplate, prompt_kwargs) -> str:
+                response = debator.initial_response(initial_response_prompt = debate_affirmative_reflection_prompt, prompt_kwargs=kwargs)
                 first_round.append(response)
             else:
                 #NOTE: Better formatting when adding actual multiple debators
-                kwargs = {"question": debator.question, "scratchpad": debator.scratchpad, "opponent_response": first_round}
-                debator.inital_response(initial_response_template = debate_negative_reflection_prompt, kwags=kwargs)
+                kwargs = {"question": debator.question, "scratchpad": debator.scratchpad, "debator_response": first_round}
+                response = debator.initial_response(initial_response_prompt = debate_negative_reflection_prompt, prompt_kwargs=kwargs)
+                first_round.append(response)
+
+        self._update_debate_history(first_round)
+
+        rounds.append(first_round)
                 
         # Then they get to argue against each other
         # Way its described in paper, rounds continue until the judge finds the current debate satisfactory
@@ -176,16 +212,32 @@ class DebateCoordinator:
         while (not debate_finished or num_debate_rounds > self.max_num_rounds):
             curr_round = []
 
-            #Prev responses *should still be within the context window so just need to pass in the most recent one
-            for indx, debator in enumerate(self.debators):
-                response = debator.debate_response(opponent_response = prev_response)
+    
+            for indx, debator in enumerate(debators):
+                                # input_variables=["debate_log","debator_response"],
+                response = debator.debate_response(debator_response = prev_response, debate_history = self.debate_history)
                 curr_round.append(response) 
                 prev_response = response
 
-            verdict = self.llm.invoke(judge_end_of_round_reflection_prompt.format(
+            rounds.append(curr_round)
+
+            #Way I'm currently writing this, the log gets updated *after the round is done, maybe not the best way to do this
+            self._update_debate_history(curr_round)           
+            
+            # Old langchain library requires you to wrap the prompt templates like this before querying the LLM
+            system_prompt = SystemMessage(content=judge_meta_reflection_prompt.format())
+            judgement_question = HumanMessage(content=judge_end_of_round_reflection_prompt.format(
                                                             affirmative_response = curr_round[0], 
-                                                            negative_response = curr_round[1]))
-            debate_finished = verdict.debate_finished
+                                                            negative_response = curr_round[1],
+                                                            round_num = len(rounds)))
+
+            verdict = self.judge_llm.query([system_prompt, judgement_question])
+
+            verdict = json.loads(verdict)
+            
+            #So long as LLM doesn't mess up its output, this should parse correctly
+            print(verdict)
+            debate_finished = verdict["preference_found"]
 
             num_debate_rounds += 1
 
@@ -194,11 +246,22 @@ class DebateCoordinator:
         if not debate_finished:
            final_reflection = prev_response
         else:
-            final_reflection = verdict.debate_answer
+            final_reflection = verdict["debate_answer"]
+
+        print("--"*20 + "Full debate log" + "--"*20)
+        pp.pprint(rounds)
 
         return final_reflection
+    
+    def _update_debate_history(self, new_round):
+        #Tracking the round may not be necessary
+        self.debate_history += "--"*5 + f"Start of round {self.round_number}" + "--"*5
 
-       
+        for indx, response in enumerate(new_round):
+            self.debate_history += f"Debator {indx}: " + response + "\n"
+            
+        self.round_number += 1
+
     # def _format_peer_responses(self, rounds: List[List[DebateResponse]], exclude_agent: int) -> str:
     #     snippets: List[str] = []
     #     for round_turns in rounds:
