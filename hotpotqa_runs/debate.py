@@ -14,9 +14,9 @@ try:
 except ImportError:
     from langchain.prompts import PromptTemplate
 try:
-    from langchain.schema import HumanMessage, SystemMessage
+    from langchain.schema import HumanMessage, SystemMessage, AIMessage
 except ImportError:
-    from langchain_core.messages import HumanMessage, SystemMessage
+    from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
 try:
     from langchain_openai import ChatOpenAI, OpenAI
@@ -83,22 +83,34 @@ class DebateLLM:
         debate_history = self._format_debate_history(debate_history)
         prompt = debator_response_prompt.format(
                 debator_response = debator_response,
-                debate_log = debate_history
         )
 
-        debate_history = HumanMessage(content = prompt)
-        response = self.llm.query([self.system_prompt, debate_history])
+        response_question = HumanMessage(content = prompt)
+        response = self.llm.query([self.system_prompt, *debate_history, response_question])
 
         return response
     
-    def _format_debate_history(self, debate_history):
-        pattern = rf"(Debator {self.debate_id}:\s*)(.*?)(?=\nDebator \d+:|\Z)"
+    # def _format_debate_history(self, debate_history):
+    #     pattern = rf"(Debator {self.debate_id}:\s*)(.*?)(?=\nDebator \d+:|\Z)"
         
-        def repl(m):
-            response = m.group(2)    # original response text
-            return "Your response: " + response.strip()
+    #     def repl(m):
+    #         response = m.group(2)    # original response text
+    #         return "Your response: " + response.strip()
         
-        return re.sub(pattern, repl, debate_history, flags=re.DOTALL)
+    #     return re.sub(pattern, repl, debate_history, flags=re.DOTALL)
+    
+    def _format_debate_history(self, debate_history) -> List:
+        pattern = re.compile(r"Debator (\d+):\s*(.*?)\n(?=Debator \d+:|$)", re.DOTALL)
+        matches = pattern.findall(debate_history)
+
+        formatted_message = []
+        for debator_id, text in matches:
+            if debator_id == self.debate_id:
+               formatted_message.append(AIMessage(content=text)) 
+            else:
+               formatted_message.append(HumanMessage(content= f"Debator {debator_id}" + text)) 
+        
+        return formatted_message
 
 
     #TODO: Look again at what information we actually need
@@ -137,7 +149,7 @@ class DebateCoordinator:
         answer_key: str,
         # scratchpad: str,
         num_debators: int = 2,
-        max_num_rounds: int = 10, #This is the hard max, not recommended or average number of runs
+        max_num_rounds: int = 5, #This is the hard max, not recommended or average number of runs
         llm_kwargs: Optional[Dict[str, Any]] = None,
         llm: AnyOpenAILLM = None
     ) -> None:
@@ -149,13 +161,16 @@ class DebateCoordinator:
         self.max_num_rounds = max(1, max_num_rounds)
         self.round_number = 0
         self.debate_history = ""
+        
+        #TODO: Better functionality for changing the LLM model
+        self.model_name = "gpt-3.5-turbo" 
 
         # Enforcing that all judge outputs follow the desired format
         #I think don't use this llm wrapper just for here
         self.judge_llm = llm or AnyOpenAILLM(
             temperature=0,
             max_tokens=256,
-            model_name="gpt-3.5-turbo",
+            model_name=self.model_name,
         )
         #NOTE: Do we want the 'stop' thingy here too or not
 
@@ -209,6 +224,7 @@ class DebateCoordinator:
         debate_finished = False
         num_debate_rounds = 0
         prev_response = first_round[-1] 
+
         while (not debate_finished or num_debate_rounds > self.max_num_rounds):
             curr_round = []
 
@@ -225,7 +241,7 @@ class DebateCoordinator:
             self._update_debate_history(curr_round)           
             
             # Old langchain library requires you to wrap the prompt templates like this before querying the LLM
-            system_prompt = SystemMessage(content=judge_meta_reflection_prompt.format())
+            system_prompt = SystemMessage(content=judge_meta_reflection_prompt.format(examples = REFLECTIONS))
             judgement_question = HumanMessage(content=judge_end_of_round_reflection_prompt.format(
                                                             affirmative_response = curr_round[0], 
                                                             negative_response = curr_round[1],
@@ -246,7 +262,7 @@ class DebateCoordinator:
         if not debate_finished:
            final_reflection = prev_response
         else:
-            final_reflection = verdict["debate_answer"]
+            final_reflection = verdict["summary_of_winning_position"]
 
         print("--"*20 + "Full debate log" + "--"*20)
         pp.pprint(rounds)

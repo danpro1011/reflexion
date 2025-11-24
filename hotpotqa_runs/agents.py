@@ -261,6 +261,7 @@ class ReactAgent:
         self.scratchpad += f'\nAction {self.step_n}:'
         action = self.prompt_agent()
         self.scratchpad += ' ' + action
+        print("Action", action)
         action_type, argument = parse_action(action)
         print(self.scratchpad.split('\n')[-1])
 
@@ -278,7 +279,6 @@ class ReactAgent:
             return
 
         if action_type == 'Search':
-            print("Agent search")
             try:
                 self.scratchpad += format_step(self.docstore.search(argument))
             except Exception as e:
@@ -286,7 +286,6 @@ class ReactAgent:
                 self.scratchpad += f'Could not find that page, please try again.'
             
         elif action_type == 'Lookup':
-            print("Agent lookup")
             try:
                 self.scratchpad += format_step(self.docstore.lookup(argument))
             except ValueError:
@@ -454,10 +453,14 @@ def parse_action(string):
         return action_type, argument
     
     else:
-        return None
+        # If action can't be parsed, just end the trajectory
+        return "Finish", ""
 
 def format_step(step: str) -> str:
-    return step.strip('\n').strip().replace('\n', '')
+    # Cut off anything after the first ']' Fixes rare bug where LLM outputs more text than just the action itself
+    if ']' in step:
+        step = step.split(']', 1)[0] + ']'
+    return step.strip().replace('\n', '')
 
 def format_reflections(reflections: List[str],
                         header: str = REFLECTION_HEADER) -> str:

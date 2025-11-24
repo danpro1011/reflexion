@@ -1,5 +1,6 @@
 import os
 import joblib
+import tiktoken
 
 def summarize_trial(agents):
     correct = [a for a in agents if a.is_correct()]

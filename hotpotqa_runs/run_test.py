@@ -13,7 +13,6 @@ if __name__ == "__main__":
     for i in range(5):
         for agent in [a for a in agents if not a.is_correct()]:
             agent.run()
-            break
         trial += 1
         log += log_react_trial(agents, trial)
         correct, incorrect, halted = summarize_react_trial(agents)
@@ -24,6 +23,6 @@ if __name__ == "__main__":
     with open(os.path.join(root, 'ReAct', "Debate_v1", f'{len(agents)}_questions_{trial}_trials.txt'), 'w') as f:
         f.write(log)
         
-    save_agents(agents, os.path.join('ReAct',"Debate_v1", 'agents'))
+    # save_agents(agents, os.path.join('ReAct',"Debate_v1", 'agents'))
 
         

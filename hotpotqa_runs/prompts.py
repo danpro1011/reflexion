@@ -126,22 +126,6 @@ Question: {question}{scratchpad}
 
 Reflection:"""
 
-### Multi-agent debate prompts ###
-DEBATE_INITIAL_INSTRUCTION = """You are Agent {agent_id} in a small team debating an answer. Read the context, reason step by step, and end with a single Finish[answer] action.
-Context:
-{context}
-
-Question: {question}"""
-
-DEBATE_FOLLOWUP_INSTRUCTION = """You are Agent {agent_id} continuing a debate. Other agents have proposed answers and rationales. Identify any mistakes, adopt good ideas, and update your own reasoning. Keep it concise and end with a single Finish[answer].
-
-Other agents said:
-{peer_responses}
-
-Context:
-{context}
-Question: {question}"""
-
 
 #Version of this that I'm thinking about is using the debate for generating the reflections. Also having the debate will likely be alot more complicated
 # Debate prompt using the 'meta' prompts used in original multi-agent debate paper (https://aclanthology.org/2024.emnlp-main.992.pdf)
@@ -160,51 +144,50 @@ Question: {question}"""
 }
 
 # Prompts for the debator as well as the affirmative and negative prompts
-DEBATER_META_PROMPT_REFLECTION = """You are a debater. Hello and welcome to the debate. It's not necessary to fully agree with each other's perspectives, as our objective is to find the correct answer.The debate topic is stated as follows: 
-You will be given a previous reasoning trial in which an advanced reasoning agent was given access to an Docstore API environment and a question to answer. The agent was unsuccessful in answering the question either because it guessed the wrong answer with Finish[<answer>], or it used up its set number of reasoning steps. 
+DEBATER_META_PROMPT_REFLECTION = """You are a debater. Hello and welcome to the debate. Your goal is to argue against other agents' viewpoints and present yours as correct. It's not necessary to fully agree with each other's perspectives, as our objective is to find the correct answer.The debate topic is stated as follows: 
+'You will be given a previous reasoning trial in which an advanced reasoning agent was given access to an Docstore API environment and a question to answer. The agent was unsuccessful in answering the question either because it guessed the wrong answer with Finish[<answer>], or it used up its set number of reasoning steps. 
 In a few sentences, Diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. Use complete sentences.  
 A few examples of such reflections are:
-{examples}
+{examples}'
 
 """ 
 
-DEBATOR_AFFIRMATIVE_PROMPT_REFLECTION = """The previous trial was:
+DEBATOR_AFFIRMATIVE_PROMPT_REFLECTION = """Previous Trial:
 Question: {question}{scratchpad}
 
-Reflection:
 """
 
-DEBATOR_NEGATIVE_PROMPT_REFLECTION = """The previous trial was:
+DEBATOR_NEGATIVE_PROMPT_REFLECTION = """Previous Trial:
 Question: {question}{scratchpad}
 
-The other debator came up with the answer {debator_response}. You disagree with this answer. Provide your answer and reasons.
+The other debator came up with {debator_response}. You disagree with this answer. Provide your answer and reasons.
 """
 
-DEBATOR_REPLY = """{debate_log}
-
+DEBATOR_REPLY = """
 The other debator responded with {debator_response}
 Do you agree with that perspective? Please provide your reasons and answer."""
 
 #Prompts to initialize the judge as well as the moderator prompts
-
 JUDGE_META_PROMPT_REFLECTION = """You are a moderator. There will be multiple debaters involved in a debate. They will present their answers and discuss their perspectives on the following topic:
 They will be given a previous reasoning trial in which an advanced reasoning agent was given access to an Docstore API environment and a question to answer. The agent was unsuccessful in answering the question either because it guessed the wrong answer with Finish[<answer>], or it used up its set number of reasoning steps. 
 In a few sentences, they will diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure.   
+A few examples of excellent reflections are
+{examples}
 
-At the end of each round, you will evaluate answers and decide which is correct. Output your response in the following json format. 
-{{\"preference_found\": True or False, \"reason\": \"\", \"final_verdict\": \"\"}}. 
+At the end of each round, you will evaluate answers and decide which is correct. Output your response in the following json format. In reason, you will describe why you chose one argument over another, if both debators agree on a stance, then simply choose one of them.
+In summary_of_winning_position you will only generate the reccomendation that best summarizes the winning positions' view and nothing else, especailly anything to the reason for why you chose that position.
+{{\"preference_found\": True or False, \"reason\": \"\", \"summary_of_winning_position\": \"\"}}. 
 Please strictly output in JSON format, do not output irrelevant content.
 """
 
-#TODO: This prompt only contains the last responses given by each of the debators, worth tyring to actually contain the whole debate, or high level summary of it
+#TODO: This prompt only contains the most recent round given by each of the debators, worth tyring to actually contain the whole debate, or high level summary of it
 JUDGE_END_OF_ROUND_PROMPT_REFLECTION = """Now the {round_num} round of debate for both sides has ended.
-Affirmative side arguing:{affirmative_response}
+Debator 0 arguing: {affirmative_response}
 
 
-Negative side arguing: {negative_response}
+Debator 1 arguing: {negative_response}
 You, as the moderator, will evaluate both sides' answers and determine if there is a clear preference for an answer candidate. If so, please summarize your reasons for supporting affirmative/negative side. Then summarize the verdict that you feel is correct, and the debate will conclude. 
 If not, the debate will continue to the next round."""
- 
 
 
 react_agent_prompt = PromptTemplate(
@@ -223,15 +206,15 @@ reflect_prompt = PromptTemplate(
                         )
 
 ## Debate prompt formats ##
-debate_initial_prompt = PromptTemplate(
-                        input_variables=["agent_id", "context", "question"],
-                        template=DEBATE_INITIAL_INSTRUCTION,
-                        )
+# debate_initial_prompt = PromptTemplate(
+#                         input_variables=["agent_id", "context", "question"],
+#                         template=DEBATE_INITIAL_INSTRUCTION,
+#                         )
 
-debate_followup_prompt = PromptTemplate(
-                        input_variables=["agent_id", "peer_responses", "context", "question"],
-                        template=DEBATE_FOLLOWUP_INSTRUCTION,
-                        )
+# debate_followup_prompt = PromptTemplate(
+#                         input_variables=["agent_id", "peer_responses", "context", "question"],
+#                         template=DEBATE_FOLLOWUP_INSTRUCTION,
+#                         )
 
 # Debate, reflection prompts
 debate_meta_reflection_prompt = PromptTemplate(
@@ -250,11 +233,11 @@ debate_negative_reflection_prompt = PromptTemplate(
                                 )
 
 debator_response_prompt = PromptTemplate( 
-                                input_variables=["debate_log","debator_response"],
+                                input_variables=["debator_response"],
                                 template=DEBATOR_REPLY
                                 )
 
-judge_meta_reflection_prompt = PromptTemplate(template=JUDGE_META_PROMPT_REFLECTION, input_variables=[])
+judge_meta_reflection_prompt = PromptTemplate(template=JUDGE_META_PROMPT_REFLECTION, input_variables=["examples"])
 
 judge_end_of_round_reflection_prompt = PromptTemplate(
                                         input_variables=["affirmative_response", "negative_response", "round_num"],
