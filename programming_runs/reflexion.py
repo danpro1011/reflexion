@@ -4,6 +4,18 @@ from generators import generator_factory, model_factory
 
 from typing import List
 # TODO: Put in some logging
+import logging
+
+# Configure logging to both console and file
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("reflexion_run.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 def run_reflexion(
     dataset: List[dict],
@@ -23,6 +35,8 @@ def run_reflexion(
 
     num_items = len(dataset)
     num_success = resume_success_count(dataset)
+    total_api_calls = 0
+
     for i, item in enumerate_resume(dataset, log_path):
         cur_pass = 0
         is_solved = False
@@ -38,36 +52,52 @@ def run_reflexion(
 
             # first attempt
             cur_func_impl = gen.func_impl(item["prompt"], model, "simple")
+            total_api_calls += 1
             implementations.append(cur_func_impl)
+            logger.info(f"API call #{total_api_calls} for example {i+1}")
+            logger.info(f"Prompt: {item['prompt'][:100]}...")
             print("\n--- DEBUG: func_impl output ---")
             print("cur_func_impl:", repr(cur_func_impl), "type:", type(cur_func_impl))
             if not isinstance(cur_func_impl, str) or not cur_func_impl.strip():
                 print("WARNING: Failed to parse function implementation. Raw output:")
                 print(cur_func_impl)
-                continue  # or handle as needed
-            # TODO: COMMENTED OUT ASSERTION HERE 
-            #assert isinstance(cur_func_impl, str)
-            is_passing, feedback, _ = exe.execute(cur_func_impl, tests_i)
-            test_feedback.append(feedback)
+                continue
 
-            # if solved, exit early
-            if is_passing:
-                is_passing = exe.evaluate(
-                    item["entry_point"], cur_func_impl, item["test"], timeout=10)
-                is_solved = is_passing
-                num_success += int(is_passing)
+            # Run internal unit tests
+            result = exe.execute(cur_func_impl, tests_i)
+            unit_test_pass = all(result.state)
+            logger.info(f"Unit tests passed: {unit_test_pass} ({sum(result.state)}/{len(result.state)})")
+            print(f"Unit tests passed: {unit_test_pass} ({sum(result.state)}/{len(result.state)})")
+            test_feedback.append(result.feedback)
+
+            # Evaluate on real/hidden tests (solution correctness)
+            solution_pass = exe.evaluate(item["entry_point"], cur_func_impl, item["test"], timeout=10)
+            logger.info(f"Solution pass: {solution_pass}")
+            print(f"Solution passed: {solution_pass}")
+
+            # TP/FP/FN/TN classification
+            if unit_test_pass and solution_pass:
+                result_type = "TP"
+            elif not unit_test_pass and solution_pass:
+                result_type = "FN"
+            elif unit_test_pass and not solution_pass:
+                result_type = "FP"
+            else:
+                result_type = "TN"
+            logger.info(f"Evaluation result for example {i+1}: {result_type}")
+
+            if solution_pass:
+                is_solved = True
+                num_success += 1
                 break
 
-            # use self-reflection to iteratively improve
+            # Reflexion loop
             cur_iter = 1
-            cur_feedback = feedback
+            cur_feedback = result.feedback
             while cur_iter < max_iters:
-                # get self-reflection
-                reflection = gen.self_reflection(
-                    cur_func_impl, cur_feedback, model)
-                reflections += [reflection]
+                reflection = gen.self_reflection(cur_func_impl, cur_feedback, model)
+                reflections.append(reflection)
 
-                # apply self-reflection in the next attempt
                 cur_func_impl = gen.func_impl(
                     func_sig=item["prompt"],
                     model=model,
@@ -76,29 +106,42 @@ def run_reflexion(
                     feedback=cur_feedback,
                     self_reflection=reflection,
                 )
+                total_api_calls += 1
                 implementations.append(cur_func_impl)
-                # TODO: COMMENTED OUT ASSERTION HERE
-                #assert isinstance(cur_func_impl, str)
-
+                logger.info(f"API call #{total_api_calls} for example {i+1} (reflexion iter {cur_iter})")
+                print("cur_func_impl:", repr(cur_func_impl), "type:", type(cur_func_impl))
                 if not isinstance(cur_func_impl, str) or not cur_func_impl.strip():
                     print(f"WARNING: Failed to parse function implementation on iteration {cur_iter}.")
-                    break  # Exit reflexion loop for this problem
-
-                # check if all internal unit tests pass
-                is_passing, cur_feedback, _ = exe.execute(
-                    cur_func_impl, tests_i)
-                test_feedback.append(cur_feedback)
-
-                # if solved, check if it passes the real tests, exit early
-                if is_passing or cur_iter == max_iters - 1:
-                    is_passing = exe.evaluate(
-                        item["entry_point"], cur_func_impl, item["test"], timeout=10)
-                    if is_passing:
-                        item["solution"] = cur_func_impl
-                        is_solved = True
-                        num_success += 1
                     break
 
+                result = exe.execute(cur_func_impl, tests_i)
+                unit_test_pass = all(result.state)
+                logger.info(f"Unit tests passed: {unit_test_pass} ({sum(result.state)}/{len(result.state)})")
+                print(f"Unit tests passed: {unit_test_pass} ({sum(result.state)}/{len(result.state)})")
+                test_feedback.append(result.feedback)
+
+                solution_pass = exe.evaluate(item["entry_point"], cur_func_impl, item["test"], timeout=10)
+                logger.info(f"Solution pass: {solution_pass}")
+                print(f"Solution passed: {solution_pass}")
+
+                # TP/FP/FN/TN classification
+                if unit_test_pass and solution_pass:
+                    result_type = "TP"
+                elif not unit_test_pass and solution_pass:
+                    result_type = "FN"
+                elif unit_test_pass and not solution_pass:
+                    result_type = "FP"
+                else:
+                    result_type = "TN"
+                logger.info(f"Evaluation result for example {i+1}: {result_type}")
+
+                if solution_pass:
+                    item["solution"] = cur_func_impl
+                    is_solved = True
+                    num_success += 1
+                    break
+
+                cur_feedback = result.feedback
                 cur_iter += 1
             cur_pass += 1
 
@@ -109,5 +152,14 @@ def run_reflexion(
         item["solution"] = cur_func_impl
         write_jsonl(log_path, [item], append=True)
 
-        print_v(
-            f'completed {i+1}/{num_items}: acc = {round(num_success/(i+1), 2)}')
+        accuracy = round(num_success/(i+1), 2)
+        logger.info(f'Completed {i+1}/{num_items}: acc = {accuracy}, Total API calls: {total_api_calls}')
+        print_v(f'completed {i+1}/{num_items}: acc = {accuracy}')
+
+    # Final summary
+    logger.info(f"=== FINAL SUMMARY ===")
+    logger.info(f"Total examples: {num_items}")
+    logger.info(f"Successful: {num_success}")
+    logger.info(f"Final accuracy: {round(num_success/num_items, 3)}")
+    logger.info(f"Total API calls: {total_api_calls}")
+    logger.info(f"Average API calls per example: {round(total_api_calls/num_items, 2)}")
