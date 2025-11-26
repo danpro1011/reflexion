@@ -28,6 +28,8 @@ def get_args():
                         help="The maximum number of self-improvement iterations", default=10)
     parser.add_argument("--expansion_factor", type=int,
                         help="The expansion factor for the reflexion UCS and A* strategy", default=3)
+    parser.add_argument("--max_examples", type=int,
+                        help="Optional cap on how many examples to process in this run", default=None)
 
     parser.add_argument("--is_leetcode", action='store_true',
                         help="To run the leetcode benchmark")  # Temporary
@@ -50,17 +52,17 @@ def strategy_factory(strategy: str):
         return kwargs_wrapper
 
     if strategy == "simple":
-        return kwargs_wrapper_gen(run_simple, delete_keys=["expansion_factor", "max_iters"])
+        return kwargs_wrapper_gen(run_simple, delete_keys=["expansion_factor", "max_iters", "max_examples"])
     elif strategy == "reflexion":
         return kwargs_wrapper_gen(run_reflexion, delete_keys=["expansion_factor"])
     elif strategy == "immediate-reflexion":
-        return kwargs_wrapper_gen(run_immediate_reflexion, delete_keys=["expansion_factor"])
+        return kwargs_wrapper_gen(run_immediate_reflexion, delete_keys=["expansion_factor", "max_examples"])
     elif strategy == "immediate-refinement":
-        return kwargs_wrapper_gen(run_immediate_refinement, delete_keys=["expansion_factor"])
+        return kwargs_wrapper_gen(run_immediate_refinement, delete_keys=["expansion_factor", "max_examples"])
     elif strategy == "reflexion-ucs":
-        return kwargs_wrapper_gen(run_reflexion_ucs)
+        return kwargs_wrapper_gen(run_reflexion_ucs, delete_keys=["max_examples"])
     elif strategy == "test-acc":
-        return kwargs_wrapper_gen(run_test_acc, delete_keys=["expansion_factor", "max_iters"])
+        return kwargs_wrapper_gen(run_test_acc, delete_keys=["expansion_factor", "max_iters", "max_examples"])
     else:
         raise ValueError(f"Strategy `{strategy}` is not supported")
 
@@ -115,7 +117,8 @@ pass@k: {args.pass_at_k}
         log_path=log_path,
         verbose=args.verbose,
         expansion_factor=args.expansion_factor,
-        is_leetcode=args.is_leetcode
+        is_leetcode=args.is_leetcode,
+        max_examples=args.max_examples
     )
 
     print(f"Done! Check out the logs in `{log_path}`")

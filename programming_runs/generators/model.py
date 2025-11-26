@@ -11,6 +11,25 @@ import openai
 MessageRole = Literal["system", "user", "assistant"]
 
 
+# Tracks total token usage for the current process/run.
+_TOTAL_TOKENS_USED = 0
+
+
+def _update_usage(response) -> None:
+    """Accumulate token usage if the OpenAI response includes it."""
+    global _TOTAL_TOKENS_USED
+    try:
+        _TOTAL_TOKENS_USED += response["usage"]["total_tokens"]
+    except Exception:
+        # Some backends may not return usage; ignore silently.
+        pass
+
+
+def get_total_tokens_used() -> int:
+    """Return the total tokens consumed by OpenAI calls in this process."""
+    return _TOTAL_TOKENS_USED
+
+
 @dataclasses.dataclass()
 class Message():
     role: MessageRole
@@ -45,6 +64,7 @@ def gpt_completion(
         stop=stop_strs,
         n=num_comps,
     )
+    _update_usage(response)
     if num_comps == 1:
         return response.choices[0].text  # type: ignore
 
@@ -69,6 +89,7 @@ def gpt_chat(
         presence_penalty=0.0,
         n=num_comps,
     )
+    _update_usage(response)
     if num_comps == 1:
         return response.choices[0].message.content  # type: ignore
 

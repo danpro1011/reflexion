@@ -184,3 +184,1563 @@
 2025-11-18 14:15:18,467 - INFO - Evaluation result for example 25: FN
 2025-11-18 14:15:18,469 - INFO - Completed 25/296: acc = 0.0, Total API calls: 25
 2025-11-18 14:15:18,469 - INFO - Processing example 26/296
+2025-11-25 13:19:42,802 - INFO - API call #1 for example 57
+2025-11-25 13:19:42,803 - INFO - Prompt: def prime_fib(n: int) -> int:
+    """
+    prime_fib returns n-th number that is a Fibonacci number a...
+2025-11-25 13:19:42,804 - INFO - Unit tests passed: False (0/1)
+2025-11-25 13:28:49,016 - INFO - API call #1 for example 1
+2025-11-25 13:28:49,017 - INFO - Prompt: def strlen(string: str) -> int:
+    """ Return length of given string
+    >>> strlen('')
+    0
+    >...
+2025-11-25 13:28:49,018 - INFO - Unit tests passed: True (1/1)
+2025-11-25 13:28:49,018 - INFO - Solution pass: True
+2025-11-25 13:28:49,018 - INFO - Evaluation result for example 1: TP
+2025-11-25 13:28:49,018 - INFO - Completed 1/161: acc = 1.0, Total API calls: 1
+2025-11-25 13:28:57,204 - INFO - API call #2 for example 2
+2025-11-25 13:28:57,204 - INFO - Prompt: def encrypt(s: str) -> str:
+    """Create a function encrypt that takes a string as an argument and
+...
+2025-11-25 13:28:57,205 - INFO - Unit tests passed: True (1/1)
+2025-11-25 13:28:57,205 - INFO - Solution pass: True
+2025-11-25 13:28:57,205 - INFO - Evaluation result for example 2: TP
+2025-11-25 13:28:57,206 - INFO - Completed 2/161: acc = 1.0, Total API calls: 2
+2025-11-25 13:29:15,426 - INFO - API call #3 for example 3
+2025-11-25 13:29:15,427 - INFO - Prompt: from typing import Dict
+
+def check_dict_case(dict: Dict[str, str]) -> bool:
+    """
+    Given a dict...
+2025-11-25 13:29:15,429 - INFO - Unit tests passed: True (1/1)
+2025-11-25 13:29:15,430 - INFO - Solution pass: True
+2025-11-25 13:29:15,430 - INFO - Evaluation result for example 3: TP
+2025-11-25 13:29:15,432 - INFO - Completed 3/161: acc = 1.0, Total API calls: 3
+2025-11-25 13:29:30,282 - INFO - API call #4 for example 4
+2025-11-25 13:29:30,283 - INFO - Prompt: from typing import List
+
+def add(lst: List[int]) -> int:
+    """Given a non-empty list of integers l...
+2025-11-25 13:29:30,284 - INFO - Unit tests passed: True (1/1)
+2025-11-25 13:29:30,286 - INFO - Solution pass: True
+2025-11-25 13:29:30,286 - INFO - Evaluation result for example 4: TP
+2025-11-25 13:29:30,287 - INFO - Completed 4/161: acc = 1.0, Total API calls: 4
+2025-11-25 13:29:41,238 - INFO - API call #5 for example 5
+2025-11-25 13:29:41,238 - INFO - Prompt: def fix_spaces(text: str) -> str:
+    """
+    Given a string text, replace all spaces in it with und...
+2025-11-25 13:29:41,241 - INFO - Unit tests passed: False (0/1)
+2025-11-25 13:29:41,241 - INFO - Solution pass: False
+2025-11-25 13:29:41,242 - INFO - Evaluation result for example 5: TN
+2025-11-25 13:29:47,118 - INFO - API call #6 for example 5 (reflexion iter 1)
+2025-11-25 13:29:47,119 - INFO - Unit tests passed: False (0/1)
+2025-11-25 13:29:47,120 - INFO - Solution pass: False
+2025-11-25 13:29:47,120 - INFO - Evaluation result for example 5: TN
+2025-11-25 13:29:47,120 - INFO - Completed 5/161: acc = 0.8, Total API calls: 6
+2025-11-25 13:29:47,120 - INFO - Reached max_examples=5; stopping early.
+2025-11-25 13:29:47,120 - INFO - === FINAL SUMMARY ===
+2025-11-25 13:29:47,120 - INFO - Total examples: 161
+2025-11-25 13:29:47,121 - INFO - Successful: 4
+2025-11-25 13:29:47,121 - INFO - Final accuracy: 0.025
+2025-11-25 13:29:47,121 - INFO - Total API calls: 6
+2025-11-25 13:29:47,121 - INFO - Average API calls per example: 0.04
+2025-11-25 15:25:15,370 - INFO - API call #1 for example 6
+2025-11-25 15:25:15,372 - INFO - Prompt: def fibfib(n: int) -> int:
+    """The FibFib number sequence is a sequence similar to the Fibbonacci...
+2025-11-25 15:25:15,373 - INFO - Unit tests passed: True (1/1)
+2025-11-25 15:25:15,373 - INFO - Solution pass: True
+2025-11-25 15:25:15,374 - INFO - Evaluation result for example 6: TP
+2025-11-25 15:25:15,376 - INFO - Completed 6/161: acc = 0.17, Total API calls: 1
+2025-11-25 15:25:27,508 - INFO - API call #2 for example 7
+2025-11-25 15:25:27,509 - INFO - Prompt: from typing import List
+
+def double_the_difference(lst: List[float]) -> int:
+    """
+    Given a lis...
+2025-11-25 15:25:27,511 - INFO - Unit tests passed: True (1/1)
+2025-11-25 15:25:27,515 - INFO - Solution pass: False
+2025-11-25 15:25:27,515 - INFO - Evaluation result for example 7: FP
+2025-11-25 15:25:32,756 - INFO - API call #3 for example 7 (reflexion iter 1)
+2025-11-25 15:25:32,757 - INFO - Unit tests passed: False (0/1)
+2025-11-25 15:25:32,758 - INFO - Solution pass: False
+2025-11-25 15:25:32,758 - INFO - Evaluation result for example 7: TN
+2025-11-25 15:25:32,760 - INFO - Completed 7/161: acc = 0.14, Total API calls: 3
+2025-11-25 15:25:47,287 - INFO - API call #4 for example 8
+2025-11-25 15:25:47,288 - INFO - Prompt: from typing import List, Any
+
+def filter_integers(values: List[Any]) -> List[int]:
+    """ Filter gi...
+2025-11-25 15:25:47,291 - INFO - Unit tests passed: True (1/1)
+2025-11-25 15:25:47,292 - INFO - Solution pass: True
+2025-11-25 15:25:47,292 - INFO - Evaluation result for example 8: TP
+2025-11-25 15:25:47,293 - INFO - Completed 8/161: acc = 0.25, Total API calls: 4
+2025-11-25 15:26:00,218 - INFO - API call #5 for example 9
+2025-11-25 15:26:00,218 - INFO - Prompt: def car_race_collision(n: int) -> int:
+    """
+    Imagine a road that's a perfectly straight infini...
+2025-11-25 15:26:00,220 - INFO - Unit tests passed: False (0/1)
+2025-11-25 15:26:00,221 - INFO - Solution pass: False
+2025-11-25 15:26:00,222 - INFO - Evaluation result for example 9: TN
+2025-11-25 15:26:09,061 - INFO - API call #6 for example 9 (reflexion iter 1)
+2025-11-25 15:26:09,062 - INFO - Unit tests passed: True (1/1)
+2025-11-25 15:26:09,063 - INFO - Solution pass: True
+2025-11-25 15:26:09,063 - INFO - Evaluation result for example 9: TP
+2025-11-25 15:26:09,065 - INFO - Completed 9/161: acc = 0.33, Total API calls: 6
+2025-11-25 15:26:21,023 - INFO - API call #7 for example 10
+2025-11-25 15:26:21,023 - INFO - Prompt: from typing import List
+
+def parse_music(music_string: str) -> List[int]:
+    """ Input to this func...
+2025-11-25 15:26:21,024 - INFO - Unit tests passed: True (1/1)
+2025-11-25 15:26:21,025 - INFO - Solution pass: True
+2025-11-25 15:26:21,025 - INFO - Evaluation result for example 10: TP
+2025-11-25 15:26:21,026 - INFO - Completed 10/161: acc = 0.4, Total API calls: 7
+2025-11-25 15:26:21,026 - INFO - Reached max_examples=5; stopping early.
+2025-11-25 15:26:21,026 - INFO - === FINAL SUMMARY ===
+2025-11-25 15:26:21,026 - INFO - Total examples: 161
+2025-11-25 15:26:21,026 - INFO - Successful: 4
+2025-11-25 15:26:21,026 - INFO - Total API calls: 7
+2025-11-25 15:26:21,026 - INFO - Final accuracy: 0.8
+2025-11-25 15:26:21,026 - INFO - Average API calls per example: 1.4
+2025-11-25 15:26:21,026 - INFO - Total skipped examples: 0
+2025-11-25 15:26:21,027 - INFO - Total tokens used (OpenAI): 8358
+2025-11-25 16:12:58,643 - INFO - API call #1 for example 11
+2025-11-25 16:12:58,644 - INFO - Prompt: def decimal_to_binary(decimal: int) -> str:
+    """You will be given a number in decimal form and yo...
+2025-11-25 16:12:58,644 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:12:58,644 - INFO - Solution pass: True
+2025-11-25 16:12:58,645 - INFO - Evaluation result for example 11: TP
+2025-11-25 16:12:58,645 - INFO - Completed 11/161: acc = 0.09, Total API calls: 1
+2025-11-25 16:13:12,238 - INFO - API call #2 for example 12
+2025-11-25 16:13:12,239 - INFO - Prompt: from typing import List
+
+def all_prefixes(string: str) -> List[str]:
+    """ Return list of all pref...
+2025-11-25 16:13:12,239 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:13:12,239 - INFO - Solution pass: True
+2025-11-25 16:13:12,240 - INFO - Evaluation result for example 12: TP
+2025-11-25 16:13:12,240 - INFO - Completed 12/161: acc = 0.17, Total API calls: 2
+2025-11-25 16:13:19,481 - INFO - API call #3 for example 13
+2025-11-25 16:13:19,481 - INFO - Prompt: def add(x: int, y: int) -> int:
+    """Add two numbers x and y
+    >>> add(2, 3)
+    5
+    >>> add(5...
+2025-11-25 16:13:19,482 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:13:19,482 - INFO - Solution pass: True
+2025-11-25 16:13:19,482 - INFO - Evaluation result for example 13: TP
+2025-11-25 16:13:19,483 - INFO - Completed 13/161: acc = 0.23, Total API calls: 3
+2025-11-25 16:13:37,591 - INFO - API call #4 for example 14
+2025-11-25 16:13:37,593 - INFO - Prompt: from typing import List
+
+def eat(number: int, need: int, remaining: int) -> List[int]:
+    """
+    Y...
+2025-11-25 16:13:37,597 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:13:37,599 - INFO - Solution pass: True
+2025-11-25 16:13:37,602 - INFO - Evaluation result for example 14: TP
+2025-11-25 16:13:37,604 - INFO - Completed 14/161: acc = 0.29, Total API calls: 4
+2025-11-25 16:13:56,715 - INFO - API call #5 for example 15
+2025-11-25 16:13:56,716 - INFO - Prompt: from typing import List
+
+def max_fill(grid: List[List[int]], capacity: int) -> int:
+    """
+    You ...
+2025-11-25 16:13:56,717 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:13:56,718 - INFO - Solution pass: False
+2025-11-25 16:13:56,718 - INFO - Evaluation result for example 15: FP
+2025-11-25 16:14:03,826 - INFO - API call #6 for example 15 (reflexion iter 1)
+2025-11-25 16:14:03,828 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:14:03,829 - INFO - Solution pass: False
+2025-11-25 16:14:03,829 - INFO - Evaluation result for example 15: FP
+2025-11-25 16:14:03,831 - INFO - Completed 15/161: acc = 0.27, Total API calls: 6
+2025-11-25 16:14:03,831 - INFO - Reached max_examples=5; stopping early.
+2025-11-25 16:14:03,831 - INFO - === FINAL SUMMARY ===
+2025-11-25 16:14:03,832 - INFO - Total examples: 161
+2025-11-25 16:14:03,832 - INFO - Successful: 4
+2025-11-25 16:14:03,832 - INFO - Total API calls: 6
+2025-11-25 16:14:03,832 - INFO - Final accuracy: 0.8
+2025-11-25 16:14:03,832 - INFO - Average API calls per example: 1.2
+2025-11-25 16:14:03,832 - INFO - Total skipped examples: 0
+2025-11-25 16:14:03,832 - INFO - Total tokens used (OpenAI): 6805
+2025-11-25 16:19:05,375 - INFO - API call #1 for example 16
+2025-11-25 16:19:05,377 - INFO - Prompt: from typing import List
+
+def do_algebra(operator: List[str], operand: List[int]) -> int:
+    """
+   ...
+2025-11-25 16:19:05,381 - INFO - Unit tests passed: False (0/1)
+2025-11-25 16:19:05,385 - INFO - Solution pass: False
+2025-11-25 16:19:05,385 - INFO - Evaluation result for example 16: TN
+2025-11-25 16:19:33,268 - INFO - API call #2 for example 16 (reflexion iter 1)
+2025-11-25 16:19:33,278 - INFO - Unit tests passed: False (0/1)
+2025-11-25 16:19:33,280 - INFO - Solution pass: True
+2025-11-25 16:19:33,280 - INFO - Evaluation result for example 16: FN
+2025-11-25 16:19:33,284 - INFO - Completed 16/161: acc = 0.06, Total API calls: 2
+2025-11-25 16:19:37,976 - INFO - API call #3 for example 17
+2025-11-25 16:19:37,976 - INFO - Prompt: def flip_case(string: str) -> str:
+    """ For a given string, flip lowercase characters to uppercas...
+2025-11-25 16:19:37,977 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:19:37,977 - INFO - Solution pass: True
+2025-11-25 16:19:37,977 - INFO - Evaluation result for example 17: TP
+2025-11-25 16:19:37,978 - INFO - Completed 17/161: acc = 0.12, Total API calls: 3
+2025-11-25 16:19:51,228 - INFO - API call #4 for example 18
+2025-11-25 16:19:51,230 - INFO - Prompt: from typing import List
+
+def by_length(arr: List[int]) -> List[str]:
+    """
+    Given an array of i...
+2025-11-25 16:19:51,232 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:19:51,233 - INFO - Solution pass: False
+2025-11-25 16:19:51,233 - INFO - Evaluation result for example 18: FP
+2025-11-25 16:19:59,592 - INFO - API call #5 for example 18 (reflexion iter 1)
+2025-11-25 16:19:59,595 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:19:59,596 - INFO - Solution pass: False
+2025-11-25 16:19:59,597 - INFO - Evaluation result for example 18: FP
+2025-11-25 16:19:59,601 - INFO - Completed 18/161: acc = 0.11, Total API calls: 5
+2025-11-25 16:20:13,029 - INFO - API call #6 for example 19
+2025-11-25 16:20:13,030 - INFO - Prompt: from typing import List
+
+def factorize(n: int) -> List[int]:
+    """ Return list of prime factors of...
+2025-11-25 16:20:13,031 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:20:13,032 - INFO - Solution pass: True
+2025-11-25 16:20:13,032 - INFO - Evaluation result for example 19: TP
+2025-11-25 16:20:13,033 - INFO - Completed 19/161: acc = 0.16, Total API calls: 6
+2025-11-25 16:20:28,608 - INFO - API call #7 for example 20
+2025-11-25 16:20:28,609 - INFO - Prompt: from typing import List
+
+def count_up_to(n: int) -> List[int]:
+    """Implement a function that take...
+2025-11-25 16:20:28,612 - INFO - Unit tests passed: False (0/1)
+2025-11-25 16:20:28,614 - INFO - Solution pass: True
+2025-11-25 16:20:28,615 - INFO - Evaluation result for example 20: FN
+2025-11-25 16:20:28,616 - INFO - Completed 20/161: acc = 0.2, Total API calls: 7
+2025-11-25 16:20:28,616 - INFO - Reached max_examples=5; stopping early.
+2025-11-25 16:20:28,616 - INFO - === FINAL SUMMARY ===
+2025-11-25 16:20:28,616 - INFO - Total examples: 161
+2025-11-25 16:20:28,616 - INFO - Successful: 4
+2025-11-25 16:20:28,617 - INFO - Total API calls: 7
+2025-11-25 16:20:28,617 - INFO - Final accuracy: 0.8
+2025-11-25 16:20:28,617 - INFO - Average API calls per example: 1.4
+2025-11-25 16:20:28,617 - INFO - Total skipped examples: 0
+2025-11-25 16:20:28,617 - INFO - Total tokens used (OpenAI): 9206
+2025-11-25 16:28:54,338 - INFO - API call #1 for example 21
+2025-11-25 16:28:54,339 - INFO - Prompt: from typing import List
+
+def unique(l: List[int]) -> List[int]:
+    """Return sorted unique elements...
+2025-11-25 16:28:54,340 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:28:54,340 - INFO - Solution pass: True
+2025-11-25 16:28:54,340 - INFO - Evaluation result for example 21: TP
+2025-11-25 16:28:54,341 - INFO - Completed 21/161: acc = 0.05, Total API calls: 1
+2025-11-25 16:29:06,011 - INFO - API call #2 for example 22
+2025-11-25 16:29:06,011 - INFO - Prompt: from typing import List
+
+def total_match(lst1: List[str], lst2: List[str]) -> List[str]:
+    """
+   ...
+2025-11-25 16:29:06,012 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:29:06,013 - INFO - Solution pass: True
+2025-11-25 16:29:06,013 - INFO - Evaluation result for example 22: TP
+2025-11-25 16:29:06,014 - INFO - Completed 22/161: acc = 0.09, Total API calls: 2
+2025-11-25 16:29:19,726 - INFO - API call #3 for example 23
+2025-11-25 16:29:19,726 - INFO - Prompt: from typing import List
+
+def max_element(l: List[int]) -> int:
+    """Return maximum element in the ...
+2025-11-25 16:29:19,728 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:29:19,729 - INFO - Solution pass: True
+2025-11-25 16:29:19,729 - INFO - Evaluation result for example 23: TP
+2025-11-25 16:29:19,730 - INFO - Completed 23/161: acc = 0.13, Total API calls: 3
+2025-11-25 16:29:27,407 - INFO - API call #4 for example 24
+2025-11-25 16:29:27,407 - INFO - Prompt: def is_nested(string: str) -> bool:
+    """
+    Create a function that takes a string as input which...
+2025-11-25 16:29:27,407 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:29:27,408 - INFO - Solution pass: False
+2025-11-25 16:29:27,408 - INFO - Evaluation result for example 24: FP
+2025-11-25 16:29:33,420 - INFO - API call #5 for example 24 (reflexion iter 1)
+2025-11-25 16:29:33,421 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:29:33,421 - INFO - Solution pass: False
+2025-11-25 16:29:33,421 - INFO - Evaluation result for example 24: FP
+2025-11-25 16:29:33,422 - INFO - Completed 24/161: acc = 0.12, Total API calls: 5
+2025-11-25 16:29:42,775 - INFO - API call #6 for example 25
+2025-11-25 16:29:42,776 - INFO - Prompt: from typing import Union
+
+def rounded_avg(n: int, m: int) -> Union[str, int]:
+    """You are given t...
+2025-11-25 16:29:42,777 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:29:42,778 - INFO - Solution pass: True
+2025-11-25 16:29:42,778 - INFO - Evaluation result for example 25: TP
+2025-11-25 16:29:42,779 - INFO - Completed 25/161: acc = 0.16, Total API calls: 6
+2025-11-25 16:29:42,779 - INFO - Reached max_examples=5; stopping early.
+2025-11-25 16:29:42,780 - INFO - =====================================================================
+2025-11-25 16:29:42,780 - INFO - =========================== FINAL SUMMARY ===========================
+2025-11-25 16:29:42,780 - INFO - =====================================================================
+2025-11-25 16:29:42,780 - INFO - Total examples: 161
+2025-11-25 16:29:42,780 - INFO - Successful: 4
+2025-11-25 16:29:42,780 - INFO - Total API calls: 6
+2025-11-25 16:29:42,780 - INFO - Final accuracy: 0.8
+2025-11-25 16:29:42,780 - INFO - Average API calls per example: 1.2
+2025-11-25 16:29:42,780 - INFO - Total skipped examples: 0
+2025-11-25 16:29:42,781 - INFO - Total tokens used (OpenAI): 6147
+2025-11-25 16:59:53,649 - INFO - API call #1 for example 26
+2025-11-25 16:59:53,650 - INFO - Prompt: from typing import List
+
+def odd_count(lst: List[str]) -> List[str]:
+    """Given a list of strings,...
+2025-11-25 16:59:53,651 - INFO - Unit tests passed: True (1/1)
+2025-11-25 16:59:53,652 - INFO - Solution pass: True
+2025-11-25 16:59:53,652 - INFO - Evaluation result for example 26: TP
+2025-11-25 16:59:53,653 - INFO - Completed 26/161: acc = 0.04, Total API calls: 1
+2025-11-25 17:00:05,908 - INFO - API call #2 for example 27
+2025-11-25 17:00:05,910 - INFO - Prompt: from typing import List
+
+def move_one_ball(arr: List[int]) -> bool:
+    """We have an array 'arr' of...
+2025-11-25 17:00:05,911 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:00:05,912 - INFO - Solution pass: True
+2025-11-25 17:00:05,912 - INFO - Evaluation result for example 27: TP
+2025-11-25 17:00:05,914 - INFO - Completed 27/161: acc = 0.07, Total API calls: 2
+2025-11-25 17:00:18,964 - INFO - API call #3 for example 28
+2025-11-25 17:00:18,965 - INFO - Prompt: from typing import Tuple
+
+def even_odd_palindrome(n: int) -> Tuple[int, int]:
+    """
+    Given a po...
+2025-11-25 17:00:18,966 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:00:18,967 - INFO - Solution pass: True
+2025-11-25 17:00:18,968 - INFO - Evaluation result for example 28: TP
+2025-11-25 17:00:18,969 - INFO - Completed 28/161: acc = 0.11, Total API calls: 3
+2025-11-25 17:01:09,960 - INFO - API call #4 for example 29
+2025-11-25 17:01:09,960 - INFO - Prompt: def is_equal_to_sum_even(n: int) -> bool:
+    """Evaluate whether the given number n can be written ...
+2025-11-25 17:01:09,962 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:01:09,963 - INFO - Solution pass: True
+2025-11-25 17:01:09,963 - INFO - Evaluation result for example 29: TP
+2025-11-25 17:01:09,964 - INFO - Completed 29/161: acc = 0.14, Total API calls: 4
+2025-11-25 17:01:19,267 - INFO - API call #5 for example 30
+2025-11-25 17:01:19,267 - INFO - Prompt: from typing import List
+
+def derivative(xs: List[int]) -> List[int]:
+    """ xs represent coefficien...
+2025-11-25 17:01:19,268 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:01:19,269 - INFO - Solution pass: True
+2025-11-25 17:01:19,269 - INFO - Evaluation result for example 30: TP
+2025-11-25 17:01:19,270 - INFO - Completed 30/161: acc = 0.17, Total API calls: 5
+2025-11-25 17:01:32,675 - INFO - API call #6 for example 31
+2025-11-25 17:01:32,675 - INFO - Prompt: from typing import List
+
+def is_sorted(lst: List[int]) -> bool:
+    """
+    Given a list of numbers,...
+2025-11-25 17:01:32,677 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:01:32,678 - INFO - Solution pass: False
+2025-11-25 17:01:32,678 - INFO - Evaluation result for example 31: FP
+2025-11-25 17:01:40,269 - INFO - API call #7 for example 31 (reflexion iter 1)
+2025-11-25 17:01:40,271 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:01:40,273 - INFO - Solution pass: False
+2025-11-25 17:01:40,273 - INFO - Evaluation result for example 31: FP
+2025-11-25 17:01:40,275 - INFO - Completed 31/161: acc = 0.16, Total API calls: 7
+2025-11-25 17:01:45,902 - INFO - API call #8 for example 32
+2025-11-25 17:01:45,902 - INFO - Prompt: def solve(s: str) -> str:
+    """You are given a string s.
+    if s[i] is a letter, reverse its case...
+2025-11-25 17:01:45,903 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:01:45,905 - INFO - Solution pass: True
+2025-11-25 17:01:45,905 - INFO - Evaluation result for example 32: TP
+2025-11-25 17:01:45,906 - INFO - Completed 32/161: acc = 0.19, Total API calls: 8
+2025-11-25 17:02:06,893 - INFO - API call #9 for example 33
+2025-11-25 17:02:06,895 - INFO - Prompt: from typing import List
+
+def tri(n: int) -> List[int]:
+    """Everyone knows Fibonacci sequence, it ...
+2025-11-25 17:02:06,897 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:02:06,898 - INFO - Solution pass: False
+2025-11-25 17:02:06,898 - INFO - Evaluation result for example 33: TN
+2025-11-25 17:02:13,858 - INFO - API call #10 for example 33 (reflexion iter 1)
+2025-11-25 17:02:13,860 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:02:13,861 - INFO - Solution pass: False
+2025-11-25 17:02:13,861 - INFO - Evaluation result for example 33: TN
+2025-11-25 17:02:13,863 - INFO - Completed 33/161: acc = 0.18, Total API calls: 10
+2025-11-25 17:02:31,929 - INFO - API call #11 for example 34
+2025-11-25 17:02:31,929 - INFO - Prompt: def fizz_buzz(n: int) -> int:
+    """Return the number of times the digit 7 appears in integers less...
+2025-11-25 17:02:31,930 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:02:31,962 - INFO - Solution pass: True
+2025-11-25 17:02:31,963 - INFO - Evaluation result for example 34: TP
+2025-11-25 17:02:31,963 - INFO - Completed 34/161: acc = 0.21, Total API calls: 11
+2025-11-25 17:02:40,992 - INFO - API call #12 for example 35
+2025-11-25 17:02:40,992 - INFO - Prompt: from typing import List
+
+def filter_by_prefix(strings: List[str], prefix: str) -> List[str]:
+    """...
+2025-11-25 17:02:40,994 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:02:40,994 - INFO - Solution pass: True
+2025-11-25 17:02:40,994 - INFO - Evaluation result for example 35: TP
+2025-11-25 17:02:40,995 - INFO - Completed 35/161: acc = 0.23, Total API calls: 12
+2025-11-25 17:02:47,370 - INFO - API call #13 for example 36
+2025-11-25 17:02:47,371 - INFO - Prompt: def solve(N: int) -> str:
+    """Given a positive integer N, return the total sum of its digits in b...
+2025-11-25 17:02:47,373 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:02:47,373 - INFO - Solution pass: False
+2025-11-25 17:02:47,373 - INFO - Evaluation result for example 36: TN
+2025-11-25 17:02:52,030 - INFO - API call #14 for example 36 (reflexion iter 1)
+2025-11-25 17:02:52,032 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:02:52,033 - INFO - Solution pass: False
+2025-11-25 17:02:52,034 - INFO - Evaluation result for example 36: TN
+2025-11-25 17:02:52,035 - INFO - Completed 36/161: acc = 0.22, Total API calls: 14
+2025-11-25 17:03:06,837 - INFO - API call #15 for example 37
+2025-11-25 17:03:06,839 - INFO - Prompt: from typing import List
+
+def minPath(grid: List[List[int]], k: int) -> List[int]:
+    """
+    Given ...
+2025-11-25 17:03:06,842 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:03:06,844 - INFO - Solution pass: False
+2025-11-25 17:03:06,844 - INFO - Evaluation result for example 37: TN
+2025-11-25 17:03:27,028 - INFO - API call #16 for example 37 (reflexion iter 1)
+2025-11-25 17:03:27,031 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:03:27,033 - INFO - Solution pass: False
+2025-11-25 17:03:27,033 - INFO - Evaluation result for example 37: TN
+2025-11-25 17:03:27,034 - INFO - Completed 37/161: acc = 0.22, Total API calls: 16
+2025-11-25 17:03:47,383 - INFO - API call #17 for example 38
+2025-11-25 17:03:47,384 - INFO - Prompt: def count_upper(s: str) -> int:
+    """
+    Given a string s, count the number of uppercase vowels i...
+2025-11-25 17:03:47,386 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:03:47,386 - INFO - Solution pass: True
+2025-11-25 17:03:47,387 - INFO - Evaluation result for example 38: TP
+2025-11-25 17:03:47,387 - INFO - Completed 38/161: acc = 0.24, Total API calls: 17
+2025-11-25 17:03:54,109 - INFO - API call #18 for example 39
+2025-11-25 17:03:54,109 - INFO - Prompt: from typing import List
+
+def maximum(arr: List[int], k: int) -> List[int]:
+    """
+    Given an arra...
+2025-11-25 17:03:54,111 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:03:54,113 - INFO - Solution pass: True
+2025-11-25 17:03:54,113 - INFO - Evaluation result for example 39: TP
+2025-11-25 17:03:54,114 - INFO - Completed 39/161: acc = 0.26, Total API calls: 18
+2025-11-25 17:04:27,280 - INFO - API call #19 for example 40
+2025-11-25 17:04:27,281 - INFO - Prompt: def largest_divisor(n: int) -> int:
+    """ For a given number n, find the largest number that divid...
+2025-11-25 17:04:27,282 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:04:27,282 - INFO - Solution pass: True
+2025-11-25 17:04:27,282 - INFO - Evaluation result for example 40: TP
+2025-11-25 17:04:27,283 - INFO - Completed 40/161: acc = 0.28, Total API calls: 19
+2025-11-25 17:04:54,440 - INFO - API call #20 for example 41
+2025-11-25 17:04:54,441 - INFO - Prompt: from typing import List
+
+def sort_array(array: List[int]) -> List[int]:
+    """
+    Given an array o...
+2025-11-25 17:04:54,443 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:04:54,444 - INFO - Solution pass: True
+2025-11-25 17:04:54,444 - INFO - Evaluation result for example 41: FN
+2025-11-25 17:04:54,445 - INFO - Completed 41/161: acc = 0.29, Total API calls: 20
+2025-11-25 17:05:09,271 - INFO - API call #21 for example 42
+2025-11-25 17:05:09,273 - INFO - Prompt: from typing import List
+
+def f(n: int) -> List[int]:
+    """ Implement the function f that takes n a...
+2025-11-25 17:05:09,275 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:05:09,276 - INFO - Solution pass: True
+2025-11-25 17:05:09,276 - INFO - Evaluation result for example 42: FN
+2025-11-25 17:05:09,277 - INFO - Completed 42/161: acc = 0.31, Total API calls: 21
+2025-11-25 17:05:18,383 - INFO - API call #22 for example 43
+2025-11-25 17:05:18,384 - INFO - Prompt: def iscube(a: int) -> bool:
+    """
+    Write a function that takes an integer a and returns True 
+ ...
+2025-11-25 17:05:18,385 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:05:18,386 - INFO - Solution pass: True
+2025-11-25 17:05:18,386 - INFO - Evaluation result for example 43: TP
+2025-11-25 17:05:18,387 - INFO - Completed 43/161: acc = 0.33, Total API calls: 22
+2025-11-25 17:05:27,826 - INFO - API call #23 for example 44
+2025-11-25 17:05:27,827 - INFO - Prompt: def encode(message: str) -> str:
+    """
+    Write a function that takes a message, and encodes in s...
+2025-11-25 17:05:27,829 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:05:27,830 - INFO - Solution pass: False
+2025-11-25 17:05:27,830 - INFO - Evaluation result for example 44: TN
+2025-11-25 17:05:44,191 - INFO - API call #24 for example 44 (reflexion iter 1)
+2025-11-25 17:05:44,194 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:05:44,195 - INFO - Solution pass: False
+2025-11-25 17:05:44,195 - INFO - Evaluation result for example 44: TN
+2025-11-25 17:05:44,197 - INFO - Completed 44/161: acc = 0.32, Total API calls: 24
+2025-11-25 17:06:08,459 - INFO - API call #25 for example 45
+2025-11-25 17:06:08,460 - INFO - Prompt: def is_bored(S: str) -> int:
+    """
+    You'll be given a string of words, and your task is to coun...
+2025-11-25 17:06:08,463 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:06:08,463 - INFO - Solution pass: False
+2025-11-25 17:06:08,463 - INFO - Evaluation result for example 45: TN
+2025-11-25 17:06:18,187 - INFO - API call #26 for example 45 (reflexion iter 1)
+2025-11-25 17:06:18,189 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:06:18,189 - INFO - Solution pass: False
+2025-11-25 17:06:18,190 - INFO - Evaluation result for example 45: FP
+2025-11-25 17:06:18,192 - INFO - Completed 45/161: acc = 0.31, Total API calls: 26
+2025-11-25 17:06:32,397 - INFO - API call #27 for example 46
+2025-11-25 17:06:32,399 - INFO - Prompt: from typing import List
+
+def pairs_sum_to_zero(l: List[int]) -> bool:
+    """
+    pairs_sum_to_zero ...
+2025-11-25 17:06:32,400 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:06:32,400 - INFO - Solution pass: True
+2025-11-25 17:06:32,400 - INFO - Evaluation result for example 46: TP
+2025-11-25 17:06:32,401 - INFO - Completed 46/161: acc = 0.33, Total API calls: 27
+2025-11-25 17:06:43,092 - INFO - API call #28 for example 47
+2025-11-25 17:06:43,092 - INFO - Prompt: def triangle_area(a: int, b: int, c: int) -> float:
+    """
+    Given the lengths of the three sides...
+2025-11-25 17:06:43,094 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:06:43,095 - INFO - Solution pass: True
+2025-11-25 17:06:43,095 - INFO - Evaluation result for example 47: TP
+2025-11-25 17:06:43,096 - INFO - Completed 47/161: acc = 0.34, Total API calls: 28
+2025-11-25 17:06:55,639 - INFO - API call #29 for example 48
+2025-11-25 17:06:55,640 - INFO - Prompt: from typing import Tuple
+
+def bf(planet1: str, planet2: str) -> Tuple[str, ...]:
+    """
+    There a...
+2025-11-25 17:06:55,642 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:06:55,643 - INFO - Solution pass: True
+2025-11-25 17:06:55,643 - INFO - Evaluation result for example 48: TP
+2025-11-25 17:06:55,644 - INFO - Completed 48/161: acc = 0.35, Total API calls: 29
+2025-11-25 17:07:01,835 - INFO - API call #30 for example 49
+2025-11-25 17:07:01,836 - INFO - Prompt: def digits(n: int) -> int:
+    """Given a positive integer n, return the product of the odd digits.
+...
+2025-11-25 17:07:01,837 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:07:01,838 - INFO - Solution pass: True
+2025-11-25 17:07:01,838 - INFO - Evaluation result for example 49: TP
+2025-11-25 17:07:01,839 - INFO - Completed 49/161: acc = 0.37, Total API calls: 30
+2025-11-25 17:07:17,169 - INFO - API call #31 for example 50
+2025-11-25 17:07:17,171 - INFO - Prompt: from typing import List
+
+def words_string(s: str) -> List[str]:
+    """
+    You will be given a stri...
+2025-11-25 17:07:17,172 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:07:17,173 - INFO - Solution pass: True
+2025-11-25 17:07:17,173 - INFO - Evaluation result for example 50: TP
+2025-11-25 17:07:17,174 - INFO - Completed 50/161: acc = 0.38, Total API calls: 31
+2025-11-25 17:07:33,783 - INFO - API call #32 for example 51
+2025-11-25 17:07:33,785 - INFO - Prompt: def how_many_times(string: str, substring: str) -> int:
+    """ Find how many times a given substrin...
+2025-11-25 17:07:33,787 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:07:33,788 - INFO - Solution pass: True
+2025-11-25 17:07:33,788 - INFO - Evaluation result for example 51: FN
+2025-11-25 17:07:33,789 - INFO - Completed 51/161: acc = 0.39, Total API calls: 32
+2025-11-25 17:07:58,335 - INFO - API call #33 for example 52
+2025-11-25 17:07:58,336 - INFO - Prompt: from typing import Union
+
+def compare_one(a: Union[int, float, str], b: Union[int, float, str]) -> U...
+2025-11-25 17:07:58,337 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:07:58,338 - INFO - Solution pass: True
+2025-11-25 17:07:58,338 - INFO - Evaluation result for example 52: TP
+2025-11-25 17:07:58,340 - INFO - Completed 52/161: acc = 0.4, Total API calls: 33
+2025-11-25 17:08:05,913 - INFO - API call #34 for example 53
+2025-11-25 17:08:05,913 - INFO - Prompt: def remove_vowels(text: str) -> str:
+    """
+    remove_vowels is a function that takes string and r...
+2025-11-25 17:08:05,915 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:08:05,916 - INFO - Solution pass: True
+2025-11-25 17:08:05,916 - INFO - Evaluation result for example 53: TP
+2025-11-25 17:08:05,917 - INFO - Completed 53/161: acc = 0.42, Total API calls: 34
+2025-11-25 17:08:18,795 - INFO - API call #35 for example 54
+2025-11-25 17:08:18,796 - INFO - Prompt: from typing import List
+
+def strange_sort_list(lst: List[int]) -> List[int]:
+    """
+    Given list ...
+2025-11-25 17:08:18,797 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:08:18,798 - INFO - Solution pass: True
+2025-11-25 17:08:18,798 - INFO - Evaluation result for example 54: TP
+2025-11-25 17:08:18,799 - INFO - Completed 54/161: acc = 0.43, Total API calls: 35
+2025-11-25 17:08:35,916 - INFO - API call #36 for example 55
+2025-11-25 17:08:35,918 - INFO - Prompt: from typing import List, Tuple
+
+def find_closest_elements(numbers: List[float]) -> Tuple[float, floa...
+2025-11-25 17:08:35,919 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:08:35,920 - INFO - Solution pass: True
+2025-11-25 17:08:35,921 - INFO - Evaluation result for example 55: TP
+2025-11-25 17:08:35,922 - INFO - Completed 55/161: acc = 0.44, Total API calls: 36
+2025-11-25 17:08:46,258 - INFO - API call #37 for example 56
+2025-11-25 17:08:46,258 - INFO - Prompt: def is_simple_power(x: int, n: int) -> bool:
+    """Your task is to write a function that returns tr...
+2025-11-25 17:08:46,260 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:08:46,261 - INFO - Solution pass: True
+2025-11-25 17:08:46,261 - INFO - Evaluation result for example 56: TP
+2025-11-25 17:08:46,262 - INFO - Completed 56/161: acc = 0.45, Total API calls: 37
+2025-11-25 17:08:55,389 - INFO - API call #38 for example 57
+2025-11-25 17:08:55,390 - INFO - Prompt: def prime_fib(n: int) -> int:
+    """
+    prime_fib returns n-th number that is a Fibonacci number a...
+2025-11-25 17:08:55,392 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:08:55,393 - INFO - Solution pass: False
+2025-11-25 17:08:55,393 - INFO - Evaluation result for example 57: TN
+2025-11-25 17:09:07,661 - INFO - API call #39 for example 57 (reflexion iter 1)
+2025-11-25 17:09:07,664 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:09:07,671 - INFO - Solution pass: True
+2025-11-25 17:09:07,671 - INFO - Evaluation result for example 57: TP
+2025-11-25 17:09:07,672 - INFO - Completed 57/161: acc = 0.46, Total API calls: 39
+2025-11-25 17:09:29,985 - INFO - API call #40 for example 58
+2025-11-25 17:09:29,985 - INFO - Prompt: from typing import List
+
+def order_by_points(nums: List[int]) -> List[int]:
+    """
+    Write a func...
+2025-11-25 17:09:29,987 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:09:29,988 - INFO - Solution pass: False
+2025-11-25 17:09:29,988 - INFO - Evaluation result for example 58: FP
+2025-11-25 17:09:42,476 - INFO - API call #41 for example 58 (reflexion iter 1)
+2025-11-25 17:09:42,479 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:09:42,480 - INFO - Solution pass: False
+2025-11-25 17:09:42,480 - INFO - Evaluation result for example 58: FP
+2025-11-25 17:09:42,482 - INFO - Completed 58/161: acc = 0.45, Total API calls: 41
+2025-11-25 17:09:55,767 - INFO - API call #42 for example 59
+2025-11-25 17:09:55,768 - INFO - Prompt: from typing import List
+
+def has_close_elements(numbers: List[float], threshold: float) -> bool:
+   ...
+2025-11-25 17:09:55,769 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:09:55,770 - INFO - Solution pass: True
+2025-11-25 17:09:55,770 - INFO - Evaluation result for example 59: TP
+2025-11-25 17:09:55,771 - INFO - Completed 59/161: acc = 0.46, Total API calls: 42
+2025-11-25 17:10:01,215 - INFO - API call #43 for example 60
+2025-11-25 17:10:01,216 - INFO - Prompt: def make_palindrome(string: str) -> str:
+    """ Find the shortest palindrome that begins with a sup...
+2025-11-25 17:10:01,217 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:10:01,218 - INFO - Solution pass: True
+2025-11-25 17:10:01,218 - INFO - Evaluation result for example 60: TP
+2025-11-25 17:10:01,219 - INFO - Completed 60/161: acc = 0.47, Total API calls: 43
+2025-11-25 17:10:08,590 - INFO - API call #44 for example 61
+2025-11-25 17:10:08,590 - INFO - Prompt: def string_xor(a: str, b: str) -> str:
+    """ Input are two strings a and b consisting only of 1s a...
+2025-11-25 17:10:08,591 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:10:08,592 - INFO - Solution pass: True
+2025-11-25 17:10:08,592 - INFO - Evaluation result for example 61: TP
+2025-11-25 17:10:08,593 - INFO - Completed 61/161: acc = 0.48, Total API calls: 44
+2025-11-25 17:10:16,269 - INFO - API call #45 for example 62
+2025-11-25 17:10:16,269 - INFO - Prompt: def special_factorial(n: int) -> int:
+    """The Brazilian factorial is defined as:
+    brazilian_fa...
+2025-11-25 17:10:16,270 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:10:16,271 - INFO - Solution pass: True
+2025-11-25 17:10:16,271 - INFO - Evaluation result for example 62: TP
+2025-11-25 17:10:16,272 - INFO - Completed 62/161: acc = 0.48, Total API calls: 45
+2025-11-25 17:10:32,140 - INFO - API call #46 for example 63
+2025-11-25 17:10:32,140 - INFO - Prompt: from typing import List
+
+def add_elements(arr: List[int], k: int) -> int:
+    """
+    Given a non-em...
+2025-11-25 17:10:32,141 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:10:32,142 - INFO - Solution pass: True
+2025-11-25 17:10:32,143 - INFO - Evaluation result for example 63: TP
+2025-11-25 17:10:32,143 - INFO - Completed 63/161: acc = 0.49, Total API calls: 46
+2025-11-25 17:10:39,513 - INFO - API call #47 for example 64
+2025-11-25 17:10:39,514 - INFO - Prompt: def fib4(n: int) -> int:
+    """The Fib4 number sequence is a sequence similar to the Fibbonacci seq...
+2025-11-25 17:10:39,516 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:10:39,516 - INFO - Solution pass: True
+2025-11-25 17:10:39,516 - INFO - Evaluation result for example 64: TP
+2025-11-25 17:10:39,517 - INFO - Completed 64/161: acc = 0.5, Total API calls: 47
+2025-11-25 17:10:58,077 - INFO - API call #48 for example 65
+2025-11-25 17:10:58,077 - INFO - Prompt: from typing import List
+
+def unique_digits(x: List[int]) -> List[int]:
+    """Given a list of positi...
+2025-11-25 17:10:58,078 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:10:58,079 - INFO - Solution pass: True
+2025-11-25 17:10:58,079 - INFO - Evaluation result for example 65: TP
+2025-11-25 17:10:58,080 - INFO - Completed 65/161: acc = 0.51, Total API calls: 48
+2025-11-25 17:11:19,144 - INFO - API call #49 for example 66
+2025-11-25 17:11:19,145 - INFO - Prompt: from typing import List
+
+def select_words(s: str, n: int) -> List[str]:
+    """Given a string s and ...
+2025-11-25 17:11:19,147 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:11:19,149 - INFO - Solution pass: True
+2025-11-25 17:11:19,149 - INFO - Evaluation result for example 66: FN
+2025-11-25 17:11:19,150 - INFO - Completed 66/161: acc = 0.52, Total API calls: 49
+2025-11-25 17:11:31,740 - INFO - API call #50 for example 67
+2025-11-25 17:11:31,741 - INFO - Prompt: from typing import List
+
+def will_it_fly(q: List[int], w: int) -> bool:
+    """
+    Write a function...
+2025-11-25 17:11:31,742 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:11:31,743 - INFO - Solution pass: True
+2025-11-25 17:11:31,743 - INFO - Evaluation result for example 67: TP
+2025-11-25 17:11:31,744 - INFO - Completed 67/161: acc = 0.52, Total API calls: 50
+2025-11-25 17:11:43,208 - INFO - API call #51 for example 68
+2025-11-25 17:11:43,209 - INFO - Prompt: def fib(n: int) -> int:
+    """Return n-th Fibonacci number.
+    >>> fib(10)
+    55
+    >>> fib(1)
+ ...
+2025-11-25 17:11:43,210 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:11:43,211 - INFO - Solution pass: False
+2025-11-25 17:11:43,211 - INFO - Evaluation result for example 68: TN
+2025-11-25 17:11:54,057 - INFO - API call #52 for example 68 (reflexion iter 1)
+2025-11-25 17:11:54,058 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:11:54,060 - INFO - Solution pass: True
+2025-11-25 17:11:54,060 - INFO - Evaluation result for example 68: TP
+2025-11-25 17:11:54,062 - INFO - Completed 68/161: acc = 0.53, Total API calls: 52
+2025-11-25 17:12:09,336 - INFO - API call #53 for example 69
+2025-11-25 17:12:09,337 - INFO - Prompt: from typing import List
+
+def Strongest_Extension(class_name: str, extensions: List[str]) -> str:
+   ...
+2025-11-25 17:12:09,338 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:12:09,340 - INFO - Solution pass: True
+2025-11-25 17:12:09,340 - INFO - Evaluation result for example 69: TP
+2025-11-25 17:12:09,341 - INFO - Completed 69/161: acc = 0.54, Total API calls: 53
+2025-11-25 17:12:28,981 - INFO - API call #54 for example 70
+2025-11-25 17:12:28,983 - INFO - Prompt: from typing import List
+
+def match_parens(lst: List[str]) -> str:
+    """
+    You are given a list o...
+2025-11-25 17:12:28,984 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:12:28,985 - INFO - Solution pass: False
+2025-11-25 17:12:28,986 - INFO - Evaluation result for example 70: FP
+2025-11-25 17:12:40,040 - INFO - API call #55 for example 70 (reflexion iter 1)
+2025-11-25 17:12:40,042 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:12:40,043 - INFO - Solution pass: False
+2025-11-25 17:12:40,043 - INFO - Evaluation result for example 70: FP
+2025-11-25 17:12:40,045 - INFO - Completed 70/161: acc = 0.53, Total API calls: 55
+2025-11-25 17:12:52,532 - INFO - API call #56 for example 71
+2025-11-25 17:12:52,532 - INFO - Prompt: from typing import List, Optional
+
+def next_smallest(lst: List[int]) -> Optional[int]:
+    """
+    Y...
+2025-11-25 17:12:52,534 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:12:52,535 - INFO - Solution pass: True
+2025-11-25 17:12:52,535 - INFO - Evaluation result for example 71: TP
+2025-11-25 17:12:52,536 - INFO - Completed 71/161: acc = 0.54, Total API calls: 56
+2025-11-25 17:13:00,723 - INFO - API call #57 for example 72
+2025-11-25 17:13:00,723 - INFO - Prompt: def any_int(x: float, y: float, z: float) -> bool:
+    """
+    Create a function that takes 3 number...
+2025-11-25 17:13:00,724 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:13:00,725 - INFO - Solution pass: True
+2025-11-25 17:13:00,725 - INFO - Evaluation result for example 72: TP
+2025-11-25 17:13:00,726 - INFO - Completed 72/161: acc = 0.54, Total API calls: 57
+2025-11-25 17:13:07,826 - INFO - API call #58 for example 73
+2025-11-25 17:13:07,827 - INFO - Prompt: def truncate_number(number: float) -> float:
+    """ Given a positive floating point number, it can ...
+2025-11-25 17:13:07,828 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:13:07,829 - INFO - Solution pass: True
+2025-11-25 17:13:07,829 - INFO - Evaluation result for example 73: TP
+2025-11-25 17:13:07,830 - INFO - Completed 73/161: acc = 0.55, Total API calls: 58
+2025-11-25 17:13:17,110 - INFO - API call #59 for example 74
+2025-11-25 17:13:17,111 - INFO - Prompt: from typing import List
+
+def incr_list(l: List[int]) -> List[int]:
+    """Return list with elements ...
+2025-11-25 17:13:17,112 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:13:17,113 - INFO - Solution pass: True
+2025-11-25 17:13:17,113 - INFO - Evaluation result for example 74: TP
+2025-11-25 17:13:17,115 - INFO - Completed 74/161: acc = 0.55, Total API calls: 59
+2025-11-25 17:13:28,066 - INFO - API call #60 for example 75
+2025-11-25 17:13:28,067 - INFO - Prompt: def x_or_y(n: int, x: int, y: int) -> int:
+    """A simple program which should return the value of ...
+2025-11-25 17:13:28,068 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:13:28,069 - INFO - Solution pass: True
+2025-11-25 17:13:28,070 - INFO - Evaluation result for example 75: TP
+2025-11-25 17:13:28,070 - INFO - Completed 75/161: acc = 0.56, Total API calls: 60
+2025-11-25 17:13:35,669 - INFO - API call #61 for example 76
+2025-11-25 17:13:35,670 - INFO - Prompt: def modp(n: int, p: int) -> int:
+    """Return 2^n modulo p (be aware of numerics).
+    >>> modp(3, ...
+2025-11-25 17:13:35,671 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:13:35,672 - INFO - Solution pass: True
+2025-11-25 17:13:35,672 - INFO - Evaluation result for example 76: TP
+2025-11-25 17:13:35,673 - INFO - Completed 76/161: acc = 0.57, Total API calls: 61
+2025-11-25 17:13:46,806 - INFO - API call #62 for example 77
+2025-11-25 17:13:46,806 - INFO - Prompt: from typing import Tuple
+
+def even_odd_count(num: int) -> Tuple[int, int]:
+    """Given an integer. ...
+2025-11-25 17:13:46,807 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:13:46,809 - INFO - Solution pass: False
+2025-11-25 17:13:46,809 - INFO - Evaluation result for example 77: FP
+2025-11-25 17:13:57,661 - INFO - API call #63 for example 77 (reflexion iter 1)
+2025-11-25 17:13:57,664 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:13:57,664 - INFO - Solution pass: True
+2025-11-25 17:13:57,665 - INFO - Evaluation result for example 77: TP
+2025-11-25 17:13:57,666 - INFO - Completed 77/161: acc = 0.57, Total API calls: 63
+2025-11-25 17:14:04,327 - INFO - API call #64 for example 78
+2025-11-25 17:14:04,328 - INFO - Prompt: def is_happy(s: str) -> bool:
+    """You are given a string s.
+    Your task is to check if the stri...
+2025-11-25 17:14:04,329 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:14:04,330 - INFO - Solution pass: True
+2025-11-25 17:14:04,330 - INFO - Evaluation result for example 78: TP
+2025-11-25 17:14:04,331 - INFO - Completed 78/161: acc = 0.58, Total API calls: 64
+2025-11-25 17:14:13,736 - INFO - API call #65 for example 79
+2025-11-25 17:14:13,736 - INFO - Prompt: def largest_prime_factor(n: int) -> int:
+    """Return the largest prime factor of n. Assume n > 1 a...
+2025-11-25 17:14:13,736 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:14:13,737 - INFO - Solution pass: True
+2025-11-25 17:14:13,737 - INFO - Evaluation result for example 79: TP
+2025-11-25 17:14:13,737 - INFO - Completed 79/161: acc = 0.58, Total API calls: 65
+2025-11-25 17:14:18,653 - INFO - API call #66 for example 80
+2025-11-25 17:14:18,654 - INFO - Prompt: def digitSum(s: str) -> int:
+    """Task
+    Write a function that takes a string as input and retur...
+2025-11-25 17:14:18,655 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:14:18,655 - INFO - Solution pass: True
+2025-11-25 17:14:18,656 - INFO - Evaluation result for example 80: TP
+2025-11-25 17:14:18,657 - INFO - Completed 80/161: acc = 0.59, Total API calls: 66
+2025-11-25 17:14:31,966 - INFO - API call #67 for example 81
+2025-11-25 17:14:31,967 - INFO - Prompt: from typing import List
+
+def rescale_to_unit(numbers: List[float]) -> List[float]:
+    """ Given lis...
+2025-11-25 17:14:31,969 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:14:31,970 - INFO - Solution pass: True
+2025-11-25 17:14:31,970 - INFO - Evaluation result for example 81: FN
+2025-11-25 17:14:31,971 - INFO - Completed 81/161: acc = 0.59, Total API calls: 67
+2025-11-25 17:14:46,882 - INFO - API call #68 for example 82
+2025-11-25 17:14:46,883 - INFO - Prompt: from typing import List
+
+def solution(lst: List[int]) -> int:
+    """Given a non-empty list of integ...
+2025-11-25 17:14:46,884 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:14:46,885 - INFO - Solution pass: True
+2025-11-25 17:14:46,885 - INFO - Evaluation result for example 82: TP
+2025-11-25 17:14:46,886 - INFO - Completed 82/161: acc = 0.6, Total API calls: 68
+2025-11-25 17:15:01,953 - INFO - API call #69 for example 83
+2025-11-25 17:15:01,954 - INFO - Prompt: from typing import List
+
+def pluck(arr: List[int]) -> List[int]:
+    """
+    "Given an array represe...
+2025-11-25 17:15:01,956 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:15:01,957 - INFO - Solution pass: False
+2025-11-25 17:15:01,957 - INFO - Evaluation result for example 83: TN
+2025-11-25 17:15:07,294 - INFO - API call #70 for example 83 (reflexion iter 1)
+2025-11-25 17:15:07,296 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:15:07,297 - INFO - Solution pass: True
+2025-11-25 17:15:07,298 - INFO - Evaluation result for example 83: TP
+2025-11-25 17:15:07,299 - INFO - Completed 83/161: acc = 0.6, Total API calls: 70
+2025-11-25 17:15:20,032 - INFO - API call #71 for example 84
+2025-11-25 17:15:20,032 - INFO - Prompt: def get_max_triples(n: int) -> int:
+    """
+    You are given a positive integer n. You have to crea...
+2025-11-25 17:15:20,034 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:15:20,079 - INFO - Solution pass: True
+2025-11-25 17:15:20,079 - INFO - Evaluation result for example 84: FN
+2025-11-25 17:15:20,080 - INFO - Completed 84/161: acc = 0.61, Total API calls: 71
+2025-11-25 17:15:43,645 - INFO - API call #72 for example 85
+2025-11-25 17:15:43,646 - INFO - Prompt: from typing import List
+
+def exchange(lst1: List[int], lst2: List[int]) -> str:
+    """In this probl...
+2025-11-25 17:15:43,647 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:15:43,648 - INFO - Solution pass: True
+2025-11-25 17:15:43,649 - INFO - Evaluation result for example 85: TP
+2025-11-25 17:15:43,649 - INFO - Completed 85/161: acc = 0.61, Total API calls: 72
+2025-11-25 17:15:55,097 - INFO - API call #73 for example 86
+2025-11-25 17:15:55,098 - INFO - Prompt: from typing import List
+
+def median(l: List[int]) -> float:
+    """Return median of elements in the ...
+2025-11-25 17:15:55,099 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:15:55,100 - INFO - Solution pass: True
+2025-11-25 17:15:55,100 - INFO - Evaluation result for example 86: TP
+2025-11-25 17:15:55,101 - INFO - Completed 86/161: acc = 0.62, Total API calls: 73
+2025-11-25 17:16:05,907 - INFO - API call #74 for example 87
+2025-11-25 17:16:05,909 - INFO - Prompt: def prime_length(string: str) -> bool:
+    """Write a function that takes a string and returns True ...
+2025-11-25 17:16:05,910 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:16:05,911 - INFO - Solution pass: True
+2025-11-25 17:16:05,911 - INFO - Evaluation result for example 87: TP
+2025-11-25 17:16:05,912 - INFO - Completed 87/161: acc = 0.62, Total API calls: 74
+2025-11-25 17:16:24,607 - INFO - API call #75 for example 88
+2025-11-25 17:16:24,608 - INFO - Prompt: from typing import List
+
+def smallest_change(arr: List[int]) -> int:
+    """
+    Given an array arr ...
+2025-11-25 17:16:24,610 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:16:24,611 - INFO - Solution pass: True
+2025-11-25 17:16:24,611 - INFO - Evaluation result for example 88: FN
+2025-11-25 17:16:24,612 - INFO - Completed 88/161: acc = 0.62, Total API calls: 75
+2025-11-25 17:16:40,682 - INFO - API call #76 for example 89
+2025-11-25 17:16:40,683 - INFO - Prompt: from typing import List
+
+def sum_squares(lst: List[float]) -> int:
+    """You are given a list of nu...
+2025-11-25 17:16:40,684 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:16:40,685 - INFO - Solution pass: True
+2025-11-25 17:16:40,685 - INFO - Evaluation result for example 89: TP
+2025-11-25 17:16:40,686 - INFO - Completed 89/161: acc = 0.63, Total API calls: 76
+2025-11-25 17:16:49,461 - INFO - API call #77 for example 90
+2025-11-25 17:16:49,462 - INFO - Prompt: def file_name_check(file_name: str) -> str:
+    """Create a function which takes a string representi...
+2025-11-25 17:16:49,464 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:16:49,465 - INFO - Solution pass: False
+2025-11-25 17:16:49,465 - INFO - Evaluation result for example 90: FP
+2025-11-25 17:16:54,712 - INFO - API call #78 for example 90 (reflexion iter 1)
+2025-11-25 17:16:54,714 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:16:54,715 - INFO - Solution pass: False
+2025-11-25 17:16:54,715 - INFO - Evaluation result for example 90: FP
+2025-11-25 17:16:54,717 - INFO - Completed 90/161: acc = 0.62, Total API calls: 78
+2025-11-25 17:17:08,159 - INFO - API call #79 for example 91
+2025-11-25 17:17:08,161 - INFO - Prompt: from typing import List
+
+def triples_sum_to_zero(l: List[int]) -> bool:
+    """
+    triples_sum_to_z...
+2025-11-25 17:17:08,162 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:17:08,163 - INFO - Solution pass: True
+2025-11-25 17:17:08,163 - INFO - Evaluation result for example 91: TP
+2025-11-25 17:17:08,164 - INFO - Completed 91/161: acc = 0.63, Total API calls: 79
+2025-11-25 17:17:20,928 - INFO - API call #80 for example 92
+2025-11-25 17:17:20,928 - INFO - Prompt: from typing import Tuple
+
+def intersection(interval1: Tuple[int, int], interval2: Tuple[int, int]) -...
+2025-11-25 17:17:20,930 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:17:20,931 - INFO - Solution pass: True
+2025-11-25 17:17:20,932 - INFO - Evaluation result for example 92: FN
+2025-11-25 17:17:20,933 - INFO - Completed 92/161: acc = 0.63, Total API calls: 80
+2025-11-25 17:17:31,062 - INFO - API call #81 for example 93
+2025-11-25 17:17:31,063 - INFO - Prompt: from typing import List
+
+def separate_paren_groups(paren_string: str) -> List[str]:
+    """ Input to...
+2025-11-25 17:17:31,065 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:17:31,066 - INFO - Solution pass: False
+2025-11-25 17:17:31,066 - INFO - Evaluation result for example 93: TN
+2025-11-25 17:17:39,666 - INFO - API call #82 for example 93 (reflexion iter 1)
+2025-11-25 17:17:39,668 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:17:39,669 - INFO - Solution pass: True
+2025-11-25 17:17:39,669 - INFO - Evaluation result for example 93: TP
+2025-11-25 17:17:39,670 - INFO - Completed 93/161: acc = 0.63, Total API calls: 82
+2025-11-25 17:17:54,719 - INFO - API call #83 for example 94
+2025-11-25 17:17:54,720 - INFO - Prompt: from typing import List
+
+def compare(game: List[int], guess: List[int]) -> List[int]:
+    """I think...
+2025-11-25 17:17:54,721 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:17:54,722 - INFO - Solution pass: True
+2025-11-25 17:17:54,722 - INFO - Evaluation result for example 94: TP
+2025-11-25 17:17:54,723 - INFO - Completed 94/161: acc = 0.64, Total API calls: 83
+2025-11-25 17:18:06,683 - INFO - API call #84 for example 95
+2025-11-25 17:18:06,683 - INFO - Prompt: def starts_one_ends(n: int) -> int:
+    """
+    Given a positive integer n, return the count of the ...
+2025-11-25 17:18:06,685 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:18:06,686 - INFO - Solution pass: False
+2025-11-25 17:18:06,686 - INFO - Evaluation result for example 95: TN
+2025-11-25 17:18:15,608 - INFO - API call #85 for example 95 (reflexion iter 1)
+2025-11-25 17:18:15,610 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:18:15,611 - INFO - Solution pass: False
+2025-11-25 17:18:15,611 - INFO - Evaluation result for example 95: TN
+2025-11-25 17:18:15,612 - INFO - Completed 95/161: acc = 0.63, Total API calls: 85
+2025-11-25 17:18:22,263 - INFO - API call #86 for example 96
+2025-11-25 17:18:22,264 - INFO - Prompt: def check_if_last_char_is_a_letter(txt: str) -> bool:
+    """
+    Create a function that returns Tru...
+2025-11-25 17:18:22,265 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:18:22,266 - INFO - Solution pass: False
+2025-11-25 17:18:22,266 - INFO - Evaluation result for example 96: FP
+2025-11-25 17:18:28,921 - INFO - API call #87 for example 96 (reflexion iter 1)
+2025-11-25 17:18:28,922 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:18:28,923 - INFO - Solution pass: False
+2025-11-25 17:18:28,923 - INFO - Evaluation result for example 96: FP
+2025-11-25 17:18:28,924 - INFO - Completed 96/161: acc = 0.62, Total API calls: 87
+2025-11-25 17:18:54,521 - INFO - API call #88 for example 97
+2025-11-25 17:18:54,523 - INFO - Prompt: def valid_date(date: str) -> bool:
+    """You have to write a function which validates a given date ...
+2025-11-25 17:18:54,524 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:18:54,526 - INFO - Solution pass: True
+2025-11-25 17:18:54,526 - INFO - Evaluation result for example 97: TP
+2025-11-25 17:18:54,527 - INFO - Completed 97/161: acc = 0.63, Total API calls: 88
+2025-11-25 17:19:05,069 - INFO - API call #89 for example 98
+2025-11-25 17:19:05,069 - INFO - Prompt: from typing import List
+
+def count_nums(arr: List[int]) -> int:
+    """
+    Write a function count_n...
+2025-11-25 17:19:05,072 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:19:05,073 - INFO - Solution pass: True
+2025-11-25 17:19:05,073 - INFO - Evaluation result for example 98: FN
+2025-11-25 17:19:05,074 - INFO - Completed 98/161: acc = 0.63, Total API calls: 89
+2025-11-25 17:19:13,980 - INFO - API call #90 for example 99
+2025-11-25 17:19:13,982 - INFO - Prompt: def anti_shuffle(s: str) -> str:
+    """
+    Write a function that takes a string and returns an ord...
+2025-11-25 17:19:13,983 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:19:13,984 - INFO - Solution pass: True
+2025-11-25 17:19:13,984 - INFO - Evaluation result for example 99: FN
+2025-11-25 17:19:13,985 - INFO - Completed 99/161: acc = 0.64, Total API calls: 90
+2025-11-25 17:19:21,572 - INFO - API call #91 for example 100
+2025-11-25 17:19:21,572 - INFO - Prompt: def is_palindrome(text: str) -> bool:
+    """
+    Checks if given string is a palindrome
+    >>> is_...
+2025-11-25 17:19:21,573 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:19:21,574 - INFO - Solution pass: True
+2025-11-25 17:19:21,574 - INFO - Evaluation result for example 100: TP
+2025-11-25 17:19:21,575 - INFO - Completed 100/161: acc = 0.64, Total API calls: 91
+2025-11-25 17:19:27,903 - INFO - API call #92 for example 101
+2025-11-25 17:19:27,904 - INFO - Prompt: def get_closest_vowel(word: str) -> str:
+    """You are given a word. Your task is to find the close...
+2025-11-25 17:19:27,905 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:19:27,907 - INFO - Solution pass: True
+2025-11-25 17:19:27,907 - INFO - Evaluation result for example 101: TP
+2025-11-25 17:19:27,908 - INFO - Completed 101/161: acc = 0.64, Total API calls: 92
+2025-11-25 17:19:50,537 - INFO - API call #93 for example 102
+2025-11-25 17:19:50,539 - INFO - Prompt: def is_prime(n: int) -> bool:
+    """Return true if a given number is prime, and false otherwise.
+  ...
+2025-11-25 17:19:50,540 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:19:50,541 - INFO - Solution pass: True
+2025-11-25 17:19:50,541 - INFO - Evaluation result for example 102: TP
+2025-11-25 17:19:50,542 - INFO - Completed 102/161: acc = 0.65, Total API calls: 93
+2025-11-25 17:20:03,948 - INFO - API call #94 for example 103
+2025-11-25 17:20:03,948 - INFO - Prompt: def simplify(x: str, n: str) -> bool:
+    """Your task is to implement a function that will simplify...
+2025-11-25 17:20:03,949 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:20:03,950 - INFO - Solution pass: True
+2025-11-25 17:20:03,951 - INFO - Evaluation result for example 103: TP
+2025-11-25 17:20:03,951 - INFO - Completed 103/161: acc = 0.65, Total API calls: 94
+2025-11-25 17:20:19,421 - INFO - API call #95 for example 104
+2025-11-25 17:20:19,421 - INFO - Prompt: def hex_key(num: str) -> int:
+    """You have been tasked to write a function that receives 
+    a h...
+2025-11-25 17:20:19,422 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:20:19,423 - INFO - Solution pass: True
+2025-11-25 17:20:19,423 - INFO - Evaluation result for example 104: TP
+2025-11-25 17:20:19,424 - INFO - Completed 104/161: acc = 0.65, Total API calls: 95
+2025-11-25 17:20:28,320 - INFO - API call #96 for example 105
+2025-11-25 17:20:28,321 - INFO - Prompt: def words_in_sentence(sentence: str) -> str:
+    """
+    You are given a string representing a sente...
+2025-11-25 17:20:28,323 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:20:28,324 - INFO - Solution pass: True
+2025-11-25 17:20:28,324 - INFO - Evaluation result for example 105: FN
+2025-11-25 17:20:28,325 - INFO - Completed 105/161: acc = 0.66, Total API calls: 96
+2025-11-25 17:20:42,246 - INFO - API call #97 for example 106
+2025-11-25 17:20:42,248 - INFO - Prompt: from typing import Dict
+
+def histogram(test: str) -> Dict[str, int]:
+    """Given a string represent...
+2025-11-25 17:20:42,249 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:20:42,251 - INFO - Solution pass: True
+2025-11-25 17:20:42,251 - INFO - Evaluation result for example 106: TP
+2025-11-25 17:20:42,252 - INFO - Completed 106/161: acc = 0.66, Total API calls: 97
+2025-11-25 17:21:13,374 - INFO - API call #98 for example 107
+2025-11-25 17:21:13,375 - INFO - Prompt: from typing import List, Tuple
+
+def get_row(lst: List[List[int]], x: int) -> List[Tuple[int, int]]:
+...
+2025-11-25 17:21:13,377 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:21:13,379 - INFO - Solution pass: False
+2025-11-25 17:21:13,379 - INFO - Evaluation result for example 107: TN
+2025-11-25 17:21:26,587 - INFO - API call #99 for example 107 (reflexion iter 1)
+2025-11-25 17:21:26,589 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:21:26,591 - INFO - Solution pass: True
+2025-11-25 17:21:26,591 - INFO - Evaluation result for example 107: TP
+2025-11-25 17:21:26,592 - INFO - Completed 107/161: acc = 0.66, Total API calls: 99
+2025-11-25 17:23:01,689 - INFO - API call #100 for example 108
+2025-11-25 17:23:01,690 - INFO - Prompt: from typing import List
+
+def get_odd_collatz(n: int) -> List[int]:
+    """
+    Given a positive inte...
+2025-11-25 17:23:01,692 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:23:01,693 - INFO - Solution pass: True
+2025-11-25 17:23:01,693 - INFO - Evaluation result for example 108: FN
+2025-11-25 17:23:01,694 - INFO - Completed 108/161: acc = 0.67, Total API calls: 100
+2025-11-25 17:23:15,644 - INFO - API call #101 for example 109
+2025-11-25 17:23:15,644 - INFO - Prompt: from typing import List
+
+def can_arrange(arr: List[int]) -> int:
+    """Create a function which retu...
+2025-11-25 17:23:15,646 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:23:15,647 - INFO - Solution pass: True
+2025-11-25 17:23:15,647 - INFO - Evaluation result for example 109: TP
+2025-11-25 17:23:15,648 - INFO - Completed 109/161: acc = 0.67, Total API calls: 101
+2025-11-25 17:23:26,600 - INFO - API call #102 for example 110
+2025-11-25 17:23:26,600 - INFO - Prompt: def sort_numbers(numbers: str) -> str:
+    """ Input is a space-delimited string of numberals from '...
+2025-11-25 17:23:26,602 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:23:26,603 - INFO - Solution pass: True
+2025-11-25 17:23:26,603 - INFO - Evaluation result for example 110: TP
+2025-11-25 17:23:26,604 - INFO - Completed 110/161: acc = 0.67, Total API calls: 102
+2025-11-25 17:23:34,589 - INFO - API call #103 for example 111
+2025-11-25 17:23:34,589 - INFO - Prompt: def circular_shift(x: int, shift: int) -> str:
+    """Circular shift the digits of the integer x, sh...
+2025-11-25 17:23:34,591 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:23:34,591 - INFO - Solution pass: True
+2025-11-25 17:23:34,591 - INFO - Evaluation result for example 111: TP
+2025-11-25 17:23:34,592 - INFO - Completed 111/161: acc = 0.68, Total API calls: 103
+2025-11-25 17:23:46,958 - INFO - API call #104 for example 112
+2025-11-25 17:23:46,958 - INFO - Prompt: from typing import List
+
+def sum_squares(lst: List[int]) -> int:
+    """"
+    This function will tak...
+2025-11-25 17:23:46,961 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:23:46,962 - INFO - Solution pass: True
+2025-11-25 17:23:46,962 - INFO - Evaluation result for example 112: FN
+2025-11-25 17:23:46,963 - INFO - Completed 112/161: acc = 0.68, Total API calls: 104
+2025-11-25 17:24:22,512 - INFO - API call #105 for example 113
+2025-11-25 17:24:22,512 - INFO - Prompt: from typing import List
+
+def skjkasdkd(lst: List[int]) -> int:
+    """You are given a list of intege...
+2025-11-25 17:24:22,514 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:24:22,516 - INFO - Solution pass: True
+2025-11-25 17:24:22,516 - INFO - Evaluation result for example 113: TP
+2025-11-25 17:24:22,517 - INFO - Completed 113/161: acc = 0.68, Total API calls: 105
+2025-11-25 17:24:33,163 - INFO - API call #106 for example 114
+2025-11-25 17:24:33,163 - INFO - Prompt: from typing import List, Tuple
+
+def sum_product(numbers: List[int]) -> Tuple[int, int]:
+    """ For ...
+2025-11-25 17:24:33,165 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:24:33,166 - INFO - Solution pass: True
+2025-11-25 17:24:33,166 - INFO - Evaluation result for example 114: TP
+2025-11-25 17:24:33,167 - INFO - Completed 114/161: acc = 0.68, Total API calls: 106
+2025-11-25 17:24:45,040 - INFO - API call #107 for example 115
+2025-11-25 17:24:45,041 - INFO - Prompt: def choose_num(x: int, y: int) -> int:
+    """This function takes two positive numbers x and y and r...
+2025-11-25 17:24:45,042 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:24:45,043 - INFO - Solution pass: True
+2025-11-25 17:24:45,043 - INFO - Evaluation result for example 115: TP
+2025-11-25 17:24:45,044 - INFO - Completed 115/161: acc = 0.69, Total API calls: 107
+2025-11-25 17:24:55,792 - INFO - API call #108 for example 116
+2025-11-25 17:24:55,792 - INFO - Prompt: from typing import List, Tuple, Optional
+
+def largest_smallest_integers(lst: List[int]) -> Tuple[Opt...
+2025-11-25 17:24:55,794 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:24:55,796 - INFO - Solution pass: True
+2025-11-25 17:24:55,796 - INFO - Evaluation result for example 116: FN
+2025-11-25 17:24:55,797 - INFO - Completed 116/161: acc = 0.69, Total API calls: 108
+2025-11-25 17:25:02,039 - INFO - API call #109 for example 117
+2025-11-25 17:25:02,039 - INFO - Prompt: def count_distinct_characters(string: str) -> int:
+    """ Given a string, find out how many distinc...
+2025-11-25 17:25:02,040 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:25:02,041 - INFO - Solution pass: True
+2025-11-25 17:25:02,041 - INFO - Evaluation result for example 117: TP
+2025-11-25 17:25:02,042 - INFO - Completed 117/161: acc = 0.69, Total API calls: 109
+2025-11-25 17:25:10,743 - INFO - API call #110 for example 118
+2025-11-25 17:25:10,743 - INFO - Prompt: from typing import List
+
+def make_a_pile(n: int) -> List[int]:
+    """
+    Given a positive integer ...
+2025-11-25 17:25:10,744 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:25:10,746 - INFO - Solution pass: True
+2025-11-25 17:25:10,746 - INFO - Evaluation result for example 118: TP
+2025-11-25 17:25:10,747 - INFO - Completed 118/161: acc = 0.69, Total API calls: 110
+2025-11-25 17:25:22,210 - INFO - API call #111 for example 119
+2025-11-25 17:25:22,210 - INFO - Prompt: from typing import List, Optional
+
+def prod_signs(arr: List[int]) -> Optional[int]:
+    """
+    You ...
+2025-11-25 17:25:22,213 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:25:22,214 - INFO - Solution pass: True
+2025-11-25 17:25:22,215 - INFO - Evaluation result for example 119: FN
+2025-11-25 17:25:22,216 - INFO - Completed 119/161: acc = 0.7, Total API calls: 111
+2025-11-25 17:25:31,673 - INFO - API call #112 for example 120
+2025-11-25 17:25:31,673 - INFO - Prompt: from typing import List
+
+def minSubArraySum(nums: List[int]) -> int:
+    """
+    Given an array of i...
+2025-11-25 17:25:31,674 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:25:31,675 - INFO - Solution pass: True
+2025-11-25 17:25:31,675 - INFO - Evaluation result for example 120: TP
+2025-11-25 17:25:31,676 - INFO - Completed 120/161: acc = 0.7, Total API calls: 112
+2025-11-25 17:25:36,336 - INFO - API call #113 for example 121
+2025-11-25 17:25:36,336 - INFO - Prompt: def string_sequence(n: int) -> str:
+    """ Return a string containing space-delimited numbers start...
+2025-11-25 17:25:36,338 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:25:36,338 - INFO - Solution pass: True
+2025-11-25 17:25:36,339 - INFO - Evaluation result for example 121: TP
+2025-11-25 17:25:36,339 - INFO - Completed 121/161: acc = 0.7, Total API calls: 113
+2025-11-25 17:25:41,455 - INFO - API call #114 for example 122
+2025-11-25 17:25:41,455 - INFO - Prompt: def cycpattern_check(a: str, b: str) -> bool:
+    """You are given 2 words. You need to return True ...
+2025-11-25 17:25:41,457 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:25:41,458 - INFO - Solution pass: True
+2025-11-25 17:25:41,458 - INFO - Evaluation result for example 122: TP
+2025-11-25 17:25:41,459 - INFO - Completed 122/161: acc = 0.7, Total API calls: 114
+2025-11-25 17:25:52,086 - INFO - API call #115 for example 123
+2025-11-25 17:25:52,086 - INFO - Prompt: from typing import List
+
+def monotonic(l: List[int]) -> bool:
+    """Return True is list elements ar...
+2025-11-25 17:25:52,088 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:25:52,090 - INFO - Solution pass: False
+2025-11-25 17:25:52,090 - INFO - Evaluation result for example 123: FP
+2025-11-25 17:25:58,762 - INFO - API call #116 for example 123 (reflexion iter 1)
+2025-11-25 17:25:58,763 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:25:58,765 - INFO - Solution pass: True
+2025-11-25 17:25:58,765 - INFO - Evaluation result for example 123: TP
+2025-11-25 17:25:58,766 - INFO - Completed 123/161: acc = 0.71, Total API calls: 116
+2025-11-25 17:26:04,904 - INFO - API call #117 for example 124
+2025-11-25 17:26:04,904 - INFO - Prompt: from typing import List, Optional
+
+def longest(strings: List[str]) -> Optional[str]:
+    """ Out of ...
+2025-11-25 17:26:04,905 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:26:04,906 - INFO - Solution pass: True
+2025-11-25 17:26:04,906 - INFO - Evaluation result for example 124: TP
+2025-11-25 17:26:04,907 - INFO - Completed 124/161: acc = 0.71, Total API calls: 117
+2025-11-25 17:26:12,994 - INFO - API call #118 for example 125
+2025-11-25 17:26:12,994 - INFO - Prompt: from typing import List
+
+def below_threshold(l: List[int], t: int) -> bool:
+    """Return True if al...
+2025-11-25 17:26:12,996 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:26:12,997 - INFO - Solution pass: True
+2025-11-25 17:26:12,997 - INFO - Evaluation result for example 125: TP
+2025-11-25 17:26:12,998 - INFO - Completed 125/161: acc = 0.71, Total API calls: 118
+2025-11-25 17:26:22,854 - INFO - API call #119 for example 126
+2025-11-25 17:26:22,854 - INFO - Prompt: def is_multiply_prime(a: int) -> bool:
+    """Write a function that returns true if the given number...
+2025-11-25 17:26:22,856 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:26:23,005 - INFO - Solution pass: True
+2025-11-25 17:26:23,006 - INFO - Evaluation result for example 126: TP
+2025-11-25 17:26:23,006 - INFO - Completed 126/161: acc = 0.71, Total API calls: 119
+2025-11-25 17:26:30,881 - INFO - API call #120 for example 127
+2025-11-25 17:26:30,881 - INFO - Prompt: from typing import List
+
+def get_positive(l: List[int]) -> List[int]:
+    """Return only positive nu...
+2025-11-25 17:26:30,883 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:26:30,884 - INFO - Solution pass: True
+2025-11-25 17:26:30,884 - INFO - Evaluation result for example 127: TP
+2025-11-25 17:26:30,885 - INFO - Completed 127/161: acc = 0.72, Total API calls: 120
+2025-11-25 17:26:49,938 - INFO - API call #121 for example 128
+2025-11-25 17:26:49,938 - INFO - Prompt: from typing import List
+
+def sort_third(l: List[int]) -> List[int]:
+    """This function takes a lis...
+2025-11-25 17:26:49,939 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:26:49,940 - INFO - Solution pass: True
+2025-11-25 17:26:49,940 - INFO - Evaluation result for example 128: TP
+2025-11-25 17:26:49,941 - INFO - Completed 128/161: acc = 0.72, Total API calls: 121
+2025-11-25 17:26:58,051 - INFO - API call #122 for example 129
+2025-11-25 17:26:58,053 - INFO - Prompt: from typing import List
+
+def parse_nested_parens(paren_string: str) -> List[int]:
+    """ Input to t...
+2025-11-25 17:26:58,054 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:26:58,055 - INFO - Solution pass: True
+2025-11-25 17:26:58,055 - INFO - Evaluation result for example 129: TP
+2025-11-25 17:26:58,057 - INFO - Completed 129/161: acc = 0.72, Total API calls: 122
+2025-11-25 17:27:06,331 - INFO - API call #123 for example 130
+2025-11-25 17:27:06,332 - INFO - Prompt: def triangle_area(a: int, h: int) -> float:
+    """Given length of a side and high return area for a...
+2025-11-25 17:27:06,333 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:27:06,334 - INFO - Solution pass: True
+2025-11-25 17:27:06,334 - INFO - Evaluation result for example 130: TP
+2025-11-25 17:27:06,335 - INFO - Completed 130/161: acc = 0.72, Total API calls: 123
+2025-11-25 17:27:17,753 - INFO - API call #124 for example 131
+2025-11-25 17:27:17,754 - INFO - Prompt: def multiply(a: int, b: int) -> int:
+    """Complete the function that takes two integers and return...
+2025-11-25 17:27:17,755 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:27:17,756 - INFO - Solution pass: True
+2025-11-25 17:27:17,756 - INFO - Evaluation result for example 131: TP
+2025-11-25 17:27:17,757 - INFO - Completed 131/161: acc = 0.73, Total API calls: 124
+2025-11-25 17:27:43,414 - INFO - API call #125 for example 132
+2025-11-25 17:27:43,416 - INFO - Prompt: from typing import List
+
+def mean_absolute_deviation(numbers: List[float]) -> float:
+    """ For a g...
+2025-11-25 17:27:43,417 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:27:43,417 - INFO - Solution pass: True
+2025-11-25 17:27:43,418 - INFO - Evaluation result for example 132: TP
+2025-11-25 17:27:43,418 - INFO - Completed 132/161: acc = 0.73, Total API calls: 125
+2025-11-25 17:28:00,962 - INFO - API call #126 for example 133
+2025-11-25 17:28:00,962 - INFO - Prompt: from typing import List
+
+def common(l1: List[int], l2: List[int]) -> List[int]:
+    """Return sorted...
+2025-11-25 17:28:00,963 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:28:00,964 - INFO - Solution pass: True
+2025-11-25 17:28:00,964 - INFO - Evaluation result for example 133: TP
+2025-11-25 17:28:00,965 - INFO - Completed 133/161: acc = 0.73, Total API calls: 126
+2025-11-25 17:28:19,561 - INFO - API call #127 for example 134
+2025-11-25 17:28:19,563 - INFO - Prompt: def int_to_mini_roman(number: int) -> str:
+    """
+    Given a positive integer, obtain its roman nu...
+2025-11-25 17:28:19,564 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:28:19,565 - INFO - Solution pass: True
+2025-11-25 17:28:19,565 - INFO - Evaluation result for example 134: TP
+2025-11-25 17:28:19,566 - INFO - Completed 134/161: acc = 0.73, Total API calls: 127
+2025-11-25 17:28:39,736 - INFO - API call #128 for example 135
+2025-11-25 17:28:39,736 - INFO - Prompt: def fruit_distribution(s: str, n: int) -> int:
+    """
+    In this task, you will be given a string ...
+2025-11-25 17:28:39,738 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:28:39,739 - INFO - Solution pass: True
+2025-11-25 17:28:39,739 - INFO - Evaluation result for example 135: TP
+2025-11-25 17:28:39,740 - INFO - Completed 135/161: acc = 0.73, Total API calls: 128
+2025-11-25 17:28:50,350 - INFO - API call #129 for example 136
+2025-11-25 17:28:50,350 - INFO - Prompt: from typing import Tuple
+
+def reverse_delete(s: str, c: str) -> Tuple[str, bool]:
+    """Task
+    We...
+2025-11-25 17:28:50,351 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:28:50,352 - INFO - Solution pass: True
+2025-11-25 17:28:50,353 - INFO - Evaluation result for example 136: TP
+2025-11-25 17:28:50,353 - INFO - Completed 136/161: acc = 0.74, Total API calls: 129
+2025-11-25 17:29:04,722 - INFO - API call #130 for example 137
+2025-11-25 17:29:04,723 - INFO - Prompt: def greatest_common_divisor(a: int, b: int) -> int:
+    """ Return a greatest common divisor of two ...
+2025-11-25 17:29:04,724 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:29:04,725 - INFO - Solution pass: True
+2025-11-25 17:29:04,725 - INFO - Evaluation result for example 137: TP
+2025-11-25 17:29:04,725 - INFO - Completed 137/161: acc = 0.74, Total API calls: 130
+2025-11-25 17:29:12,593 - INFO - API call #131 for example 138
+2025-11-25 17:29:12,594 - INFO - Prompt: from typing import Union, List
+
+def split_words(txt: str) -> Union[List[str], int]:
+    """
+    Give...
+2025-11-25 17:29:12,596 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:29:12,597 - INFO - Solution pass: True
+2025-11-25 17:29:12,597 - INFO - Evaluation result for example 138: TP
+2025-11-25 17:29:12,598 - INFO - Completed 138/161: acc = 0.74, Total API calls: 131
+2025-11-25 17:29:26,415 - INFO - API call #132 for example 139
+2025-11-25 17:29:26,416 - INFO - Prompt: from typing import List
+
+def sort_array(arr: List[int]) -> List[int]:
+    """
+    In this Kata, you ...
+2025-11-25 17:29:26,418 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:29:26,419 - INFO - Solution pass: True
+2025-11-25 17:29:26,419 - INFO - Evaluation result for example 139: FN
+2025-11-25 17:29:26,420 - INFO - Completed 139/161: acc = 0.74, Total API calls: 132
+2025-11-25 17:29:32,164 - INFO - API call #133 for example 140
+2025-11-25 17:29:32,165 - INFO - Prompt: from typing import List
+
+def concatenate(strings: List[str]) -> str:
+    """ Concatenate list of str...
+2025-11-25 17:29:32,166 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:29:32,167 - INFO - Solution pass: True
+2025-11-25 17:29:32,167 - INFO - Evaluation result for example 140: TP
+2025-11-25 17:29:32,168 - INFO - Completed 140/161: acc = 0.74, Total API calls: 133
+2025-11-25 17:29:41,583 - INFO - API call #134 for example 141
+2025-11-25 17:29:41,584 - INFO - Prompt: from typing import List
+
+def sorted_list_sum(lst: List[str]) -> List[str]:
+    """Write a function t...
+2025-11-25 17:29:41,586 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:29:41,587 - INFO - Solution pass: True
+2025-11-25 17:29:41,587 - INFO - Evaluation result for example 141: TP
+2025-11-25 17:29:41,588 - INFO - Completed 141/161: acc = 0.74, Total API calls: 134
+2025-11-25 17:29:50,377 - INFO - API call #135 for example 142
+2025-11-25 17:29:50,378 - INFO - Prompt: from typing import List
+
+def filter_by_substring(strings: List[str], substring: str) -> List[str]:
+ ...
+2025-11-25 17:29:50,379 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:29:50,380 - INFO - Solution pass: True
+2025-11-25 17:29:50,380 - INFO - Evaluation result for example 142: TP
+2025-11-25 17:29:50,381 - INFO - Completed 142/161: acc = 0.75, Total API calls: 135
+2025-11-25 17:30:03,090 - INFO - API call #136 for example 143
+2025-11-25 17:30:03,090 - INFO - Prompt: def closest_integer(value: str) -> int:
+    """
+    Create a function that takes a value (string) re...
+2025-11-25 17:30:03,092 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:30:03,092 - INFO - Solution pass: True
+2025-11-25 17:30:03,093 - INFO - Evaluation result for example 143: TP
+2025-11-25 17:30:03,094 - INFO - Completed 143/161: acc = 0.75, Total API calls: 136
+2025-11-25 17:30:10,871 - INFO - API call #137 for example 144
+2025-11-25 17:30:10,872 - INFO - Prompt: def vowels_count(s: str) -> int:
+    """Write a function vowels_count which takes a string represent...
+2025-11-25 17:30:10,873 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:30:10,874 - INFO - Solution pass: True
+2025-11-25 17:30:10,874 - INFO - Evaluation result for example 144: TP
+2025-11-25 17:30:10,875 - INFO - Completed 144/161: acc = 0.75, Total API calls: 137
+2025-11-25 17:30:24,080 - INFO - API call #138 for example 145
+2025-11-25 17:30:24,080 - INFO - Prompt: from typing import List
+
+def find_max(words: List[str]) -> str:
+    """Write a function that accepts...
+2025-11-25 17:30:24,082 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:30:24,083 - INFO - Solution pass: True
+2025-11-25 17:30:24,083 - INFO - Evaluation result for example 145: TP
+2025-11-25 17:30:24,084 - INFO - Completed 145/161: acc = 0.75, Total API calls: 138
+2025-11-25 17:30:33,931 - INFO - API call #139 for example 146
+2025-11-25 17:30:33,932 - INFO - Prompt: from typing import Optional
+
+def string_to_md5(text: str) -> Optional[str]:
+    """
+    Given a stri...
+2025-11-25 17:30:33,933 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:30:33,934 - INFO - Solution pass: True
+2025-11-25 17:30:33,935 - INFO - Evaluation result for example 146: TP
+2025-11-25 17:30:33,935 - INFO - Completed 146/161: acc = 0.75, Total API calls: 139
+2025-11-25 17:30:45,073 - INFO - API call #140 for example 147
+2025-11-25 17:30:45,073 - INFO - Prompt: def change_base(x: int, base: int) -> str:
+    """Change numerical base of input number x to base.
+ ...
+2025-11-25 17:30:45,074 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:30:45,076 - INFO - Solution pass: True
+2025-11-25 17:30:45,076 - INFO - Evaluation result for example 147: TP
+2025-11-25 17:30:45,078 - INFO - Completed 147/161: acc = 0.76, Total API calls: 140
+2025-11-25 17:30:57,463 - INFO - API call #141 for example 148
+2025-11-25 17:30:57,465 - INFO - Prompt: def right_angle_triangle(a: int, b: int, c: int) -> bool:
+    """
+    Given the lengths of the three...
+2025-11-25 17:30:57,466 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:30:57,467 - INFO - Solution pass: True
+2025-11-25 17:30:57,467 - INFO - Evaluation result for example 148: TP
+2025-11-25 17:30:57,468 - INFO - Completed 148/161: acc = 0.76, Total API calls: 141
+2025-11-25 17:31:20,913 - INFO - API call #142 for example 149
+2025-11-25 17:31:20,914 - INFO - Prompt: from typing import List
+
+def numerical_letter_grade(grades: List[float]) -> List[str]:
+    """It is ...
+2025-11-25 17:31:20,916 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:31:20,917 - INFO - Solution pass: True
+2025-11-25 17:31:20,917 - INFO - Evaluation result for example 149: TP
+2025-11-25 17:31:20,918 - INFO - Completed 149/161: acc = 0.76, Total API calls: 142
+2025-11-25 17:31:38,244 - INFO - API call #143 for example 150
+2025-11-25 17:31:38,246 - INFO - Prompt: from typing import List
+
+def intersperse(numbers: List[int], delimeter: int) -> List[int]:
+    """ I...
+2025-11-25 17:31:38,247 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:31:38,248 - INFO - Solution pass: True
+2025-11-25 17:31:38,248 - INFO - Evaluation result for example 150: TP
+2025-11-25 17:31:38,249 - INFO - Completed 150/161: acc = 0.76, Total API calls: 143
+2025-11-25 17:31:56,037 - INFO - API call #144 for example 151
+2025-11-25 17:31:56,037 - INFO - Prompt: from typing import List
+
+def specialFilter(nums: List[int]) -> int:
+    """Write a function that tak...
+2025-11-25 17:31:56,039 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:31:56,040 - INFO - Solution pass: True
+2025-11-25 17:31:56,041 - INFO - Evaluation result for example 151: TP
+2025-11-25 17:31:56,042 - INFO - Completed 151/161: acc = 0.76, Total API calls: 144
+2025-11-25 17:32:01,636 - INFO - API call #145 for example 152
+2025-11-25 17:32:01,636 - INFO - Prompt: def sum_to_n(n: int) -> int:
+    """sum_to_n is a function that sums numbers from 1 to n.
+    >>> su...
+2025-11-25 17:32:01,637 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:32:01,637 - INFO - Solution pass: True
+2025-11-25 17:32:01,638 - INFO - Evaluation result for example 152: TP
+2025-11-25 17:32:01,638 - INFO - Completed 152/161: acc = 0.76, Total API calls: 145
+2025-11-25 17:32:13,446 - INFO - API call #146 for example 153
+2025-11-25 17:32:13,446 - INFO - Prompt: from typing import List
+
+def remove_duplicates(numbers: List[int]) -> List[int]:
+    """ From a list...
+2025-11-25 17:32:13,447 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:32:13,448 - INFO - Solution pass: True
+2025-11-25 17:32:13,448 - INFO - Evaluation result for example 153: TP
+2025-11-25 17:32:13,448 - INFO - Completed 153/161: acc = 0.76, Total API calls: 146
+2025-11-25 17:32:30,708 - INFO - API call #147 for example 154
+2025-11-25 17:32:30,709 - INFO - Prompt: from typing import List
+
+def generate_integers(a: int, b: int) -> List[int]:
+    """
+    Given two p...
+2025-11-25 17:32:30,710 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:32:30,711 - INFO - Solution pass: False
+2025-11-25 17:32:30,711 - INFO - Evaluation result for example 154: FP
+2025-11-25 17:32:42,341 - INFO - API call #148 for example 154 (reflexion iter 1)
+2025-11-25 17:32:42,344 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:32:42,345 - INFO - Solution pass: False
+2025-11-25 17:32:42,345 - INFO - Evaluation result for example 154: FP
+2025-11-25 17:32:42,347 - INFO - Completed 154/161: acc = 0.76, Total API calls: 148
+2025-11-25 17:32:52,766 - INFO - API call #149 for example 155
+2025-11-25 17:32:52,766 - INFO - Prompt: from typing import List
+
+def rolling_max(numbers: List[int]) -> List[int]:
+    """ From a given list...
+2025-11-25 17:32:52,768 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:32:52,769 - INFO - Solution pass: False
+2025-11-25 17:32:52,769 - INFO - Evaluation result for example 155: FP
+2025-11-25 17:33:01,265 - INFO - API call #150 for example 155 (reflexion iter 1)
+2025-11-25 17:33:01,266 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:33:01,267 - INFO - Solution pass: True
+2025-11-25 17:33:01,267 - INFO - Evaluation result for example 155: TP
+2025-11-25 17:33:01,268 - INFO - Completed 155/161: acc = 0.76, Total API calls: 150
+2025-11-25 17:33:12,985 - INFO - API call #151 for example 156
+2025-11-25 17:33:12,986 - INFO - Prompt: from typing import List
+
+def below_zero(operations: List[int]) -> bool:
+    """ You're given a list ...
+2025-11-25 17:33:12,988 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:33:12,989 - INFO - Solution pass: True
+2025-11-25 17:33:12,989 - INFO - Evaluation result for example 156: FN
+2025-11-25 17:33:12,990 - INFO - Completed 156/161: acc = 0.76, Total API calls: 151
+2025-11-25 17:34:25,088 - INFO - API call #152 for example 157
+2025-11-25 17:34:25,089 - INFO - Prompt: from typing import List
+
+def search(lst: List[int]) -> int:
+    """
+    You are given a non-empty li...
+2025-11-25 17:34:25,091 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:34:25,093 - INFO - Solution pass: True
+2025-11-25 17:34:25,093 - INFO - Evaluation result for example 157: TP
+2025-11-25 17:34:25,094 - INFO - Completed 157/161: acc = 0.76, Total API calls: 152
+2025-11-25 17:34:31,013 - INFO - API call #153 for example 158
+2025-11-25 17:34:31,014 - INFO - Prompt: def correct_bracketing(brackets: str) -> bool:
+    """ brackets is a string of "(" and ")".
+    retu...
+2025-11-25 17:34:31,016 - INFO - Unit tests passed: False (0/1)
+2025-11-25 17:34:31,017 - INFO - Solution pass: True
+2025-11-25 17:34:31,017 - INFO - Evaluation result for example 158: FN
+2025-11-25 17:34:31,017 - INFO - Completed 158/161: acc = 0.77, Total API calls: 153
+2025-11-25 17:34:41,722 - INFO - API call #154 for example 159
+2025-11-25 17:34:41,723 - INFO - Prompt: from typing import List
+
+def sort_even(l: List[int]) -> List[int]:
+    """This function takes a list...
+2025-11-25 17:34:41,724 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:34:41,726 - INFO - Solution pass: True
+2025-11-25 17:34:41,726 - INFO - Evaluation result for example 159: TP
+2025-11-25 17:34:41,727 - INFO - Completed 159/161: acc = 0.77, Total API calls: 154
+2025-11-25 17:34:54,217 - INFO - API call #155 for example 160
+2025-11-25 17:34:54,217 - INFO - Prompt: def same_chars(s0: str, s1: str) -> bool:
+    """
+    Check if two words have the same characters.
+ ...
+2025-11-25 17:34:54,218 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:34:54,219 - INFO - Solution pass: True
+2025-11-25 17:34:54,220 - INFO - Evaluation result for example 160: TP
+2025-11-25 17:34:54,221 - INFO - Completed 160/161: acc = 0.77, Total API calls: 155
+2025-11-25 17:35:00,664 - INFO - API call #156 for example 161
+2025-11-25 17:35:00,666 - INFO - Prompt: def correct_bracketing(brackets: str) -> bool:
+    """ brackets is a string of "<" and ">".
+    retu...
+2025-11-25 17:35:00,667 - INFO - Unit tests passed: True (1/1)
+2025-11-25 17:35:00,668 - INFO - Solution pass: True
+2025-11-25 17:35:00,668 - INFO - Evaluation result for example 161: TP
+2025-11-25 17:35:00,669 - INFO - Completed 161/161: acc = 0.77, Total API calls: 156
+2025-11-25 17:35:00,669 - INFO - ==============================================================
+2025-11-25 17:35:00,669 - INFO - ======================== FINAL SUMMARY =======================
+2025-11-25 17:35:00,669 - INFO - ==============================================================
+2025-11-25 17:35:00,669 - INFO - Total examples: 161
+2025-11-25 17:35:00,669 - INFO - Number actually ran: 161
+2025-11-25 17:35:00,669 - INFO - Successful: 124
+2025-11-25 17:35:00,670 - INFO - Total API calls: 156
+2025-11-25 17:35:00,670 - INFO - Final accuracy: 0.77
+2025-11-25 17:35:00,670 - INFO - Average API calls per example: 0.97
+2025-11-25 17:35:00,670 - INFO - Total skipped examples: 0
+2025-11-25 17:35:00,670 - INFO - Total tokens used (OpenAI): 168023
