@@ -126,69 +126,89 @@ Question: {question}{scratchpad}
 
 Reflection:"""
 
+#Switching the debate style to 'society of mind' thing as desrcibed in this paper (https://openreview.net/pdf?id=zj7YuTE4t8)
+#My initial concern is how exactly is consensus extracted, not really properly explained fully, probably can't be worse than what's happening rn though
 
-#Version of this that I'm thinking about is using the debate for generating the reflections. Also having the debate will likely be alot more complicated
-# Debate prompt using the 'meta' prompts used in original multi-agent debate paper (https://aclanthology.org/2024.emnlp-main.992.pdf)
-{
-    "debate_topic": "",
-    "base_answer": "",
-    "debate_answer": "",
-    "player_meta_prompt": "You are a debater. Hello and welcome to the debate. It's not necessary to fully agree with each other's perspectives, as our objective is to find the correct answer.\nThe debate topic is stated as follows:\n##debate_topic##",
-    "moderator_meta_prompt": "You are a moderator. There will be two debaters involved in a debate. They will present their answers and discuss their perspectives on the following topic: \"##debate_topic##\"\nAt the end of each round, you will evaluate answers and decide which is correct.",
-    "affirmative_prompt": "##debate_topic##",
-    "negative_prompt": "##aff_ans##\n\nYou disagree with my answer. Provide your answer and reasons.",
-    "moderator_prompt": "Now the ##round## round of debate for both sides has ended.\n\nAffirmative side arguing:\n##aff_ans##\n\nNegative side arguing: ##neg_ans##\n\nYou, as the moderator, will evaluate both sides' answers and determine if there is a clear preference for an answer candidate. If so, please summarize your reasons for supporting affirmative/negative side and give the final answer that you think is correct, and the debate will conclude. If not, the debate will continue to the next round. Now please output your answer in json format, with the format as follows: {\"Whether there is a preference\": \"Yes or No\", \"Supported Side\": \"Affirmative or Negative\", \"Reason\": \"\", \"debate_answer\": \"\"}. Please strictly output in JSON format, do not output irrelevant content.",
-    "judge_prompt_last1": "Affirmative side arguing: ##aff_ans##\n\nNegative side arguing: ##neg_ans##\n\nNow, what answer candidates do we have? Present them without reasons.",
-    "judge_prompt_last2": "Therefore, ##debate_topic##\nPlease summarize your reasons and give the final answer that you think is correct. Now please output your answer in json format, with the format as follows: {\"Reason\": \"\", \"debate_answer\": \"\"}. Please strictly output in JSON format, do not output irrelevant content.",
-    "debate_prompt": "##oppo_ans##\n\nDo you agree with my perspective? Please provide your reasons and answer."
-}
+#Example prompts:
+# Task Type | Prompt
+# -------------------------------------------------------------
 
-# Prompts for the debator as well as the affirmative and negative prompts
-DEBATER_META_PROMPT_REFLECTION = """You are a debater. Hello and welcome to the debate. Your goal is to argue against other agents' viewpoints and present yours as correct. It's not necessary to fully agree with each other's perspectives, as our objective is to find the correct answer.The debate topic is stated as follows: 
-'You will be given a previous reasoning trial in which an advanced reasoning agent was given access to an Docstore API environment and a question to answer. The agent was unsuccessful in answering the question either because it guessed the wrong answer with Finish[<answer>], or it used up its set number of reasoning steps. 
-In a few sentences, Diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. Use complete sentences.  
+# Starting (Arithmetic)
+# What is the result of {} + {} * {} + {} - {} * {}?
+# Make sure to state your answer at the end of the response.
+
+# Debate (Arithmetic)
+# These are the recent/updated opinions from other agents: <other agent responses>
+# Use these opinions carefully as additional advice.
+# Can you provide an updated answer? Make sure to state your answer at the end of the response.
+
+# Starting (GSM8K)
+# Can you solve the following math problem? <Problem>
+# Explain your reasoning.
+# Your final answer should be a single numerical number, in the form \boxed{{answer}}, at the end of your response.
+
+# Debate (GSM8K)
+# These are the solutions to the problem from other agents: <other agent responses>
+# Using the solutions from other agents as additional information, can you provide your answer to the math problem?
+# The original math problem is <Problem>.
+# Your final answer should be a single numerical number, in the form \boxed{{answer}}, at the end of your response.
+
+# So TLDR, each agent is given a question to answer (ideally some method is used so that they come up with different answers)
+#then, the other agents answers are queried, and each agent is given a 'consensus prompt' I guess until they all converge upon an answer:
+
+#(did this really demand a graphic in the paper, lmao)
+#               'short debate'
+#  "These are the solutions to the problem from other agents: [other answers]
+#  Based off the opinion of other agents, can you give an updated response ..."
+
+#               'long debate' 
+# "These are the solutions to the problem from other agents: [other answers]
+#  Using the opinion of other agents as additional advice, can you give an updated response ..."
+
+
+# No more 'you are a debator' thing, which IMO probably for the best
+# Typical reflection prompt it's labeled as 'your' reasoning traces, I think for the structure of the 'debate' it makes more sense to say its another model's reasoning traces -> maybe not, let's see
+DEBATER_META_PROMPT_REFLECTION = """You are an expert reasoning agent that's capable of improving through self-reflection. You will be given a previous reasoning trial in which you were given access to an Docstore API environment and a question to answer.
+You were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>], or you used up your set number of reasoning steps. Diagnose a possible reason for failure and devise a new, specific, high level plan that aims to mitigate the same failure. 
+Use complete sentences.
+
 A few examples of such reflections are:
 {examples}'
-
-""" 
-
-DEBATOR_AFFIRMATIVE_PROMPT_REFLECTION = """Previous Trial:
-Question: {question}{scratchpad}
-
 """
 
-DEBATOR_NEGATIVE_PROMPT_REFLECTION = """Previous Trial:
+# Arguably shouldn't be a seperate prompt, but organizing like this for now so that stuff like personas can be added in later
+DEBATOR_INITIAL_PROMPT = """
+Previous trial:
 Question: {question}{scratchpad}
 
-The other debator came up with {debator_response}. You disagree with this answer. Provide your answer and reasons.
-"""
+Reflection:"""
 
+#No more affirmative-negative prompts, so exactly how does the paper gaurantee that the agents generate different responses other than temp param??
 DEBATOR_REPLY = """
-The other debator responded with {debator_response}
-Do you agree with that perspective? Please provide your reasons and answer."""
+These are the reflections that other agents analyzing your reasoning traces came up with: {debator_responses}
+Using the opinion of other agents as additional advice, can you give an updated response ..."""
 
-#Prompts to initialize the judge as well as the moderator prompts
-JUDGE_META_PROMPT_REFLECTION = """You are a moderator. There will be multiple debaters involved in a debate. They will present their answers and discuss their perspectives on the following topic:
-They will be given a previous reasoning trial in which an advanced reasoning agent was given access to an Docstore API environment and a question to answer. The agent was unsuccessful in answering the question either because it guessed the wrong answer with Finish[<answer>], or it used up its set number of reasoning steps. 
-In a few sentences, they will diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure.   
-A few examples of excellent reflections are
-{examples}
 
-At the end of each round, you will evaluate answers and decide which is correct. Output your response in the following json format. In reason, you will describe why you chose one argument over another, if both debators agree on a stance, then simply choose one of them.
-In summary_of_winning_position you will only generate the reccomendation that best summarizes the winning positions' view and nothing else, especailly anything to the reason for why you chose that position.
-{{\"preference_found\": True or False, \"reason\": \"\", \"summary_of_winning_position\": \"\"}}. 
-Please strictly output in JSON format, do not output irrelevant content.
+#Some method of consensus extraction is needed, as stated in paper: 'In cases of disagreement, we took the majority answer across agents at the end of debate.'
+#having a seperate judge LLM do this is the easiest solution, but is it the actually most effective??
+
+# One prompt to search for and extract a consensus, if there is one
+CONSENSUS_REACHED = """You are a highly capable judge monitoring a debate between two debators. These debators are analyzing the reasoning traces of some other agent that failed to answer the question it was given and trying to determine why it failed.
+You will view their arguments and determine whether or not the debators have come to a consensus. If they've reached a consensus, then output the id of the debator who's stance best reflects the consensus, as well as your reasoning for why.
+Output your response as {{\"consensus_reached\": True or False, \"debator_id\": <int>, \"reason\": <str>}} don't include any other sentences or words outside of the json. 
+
+Debate log:
+{debate_log}
 """
 
-#TODO: This prompt only contains the most recent round given by each of the debators, worth tyring to actually contain the whole debate, or high level summary of it
-JUDGE_END_OF_ROUND_PROMPT_REFLECTION = """Now the {round_num} round of debate for both sides has ended.
-Debator 0 arguing: {affirmative_response}
+#Another prompt to choose a verdict even if a consensus hasn't been reached.
+# NOTE: This could either summarize the consensus or just choose the 'winner' and we take their last reflection, maybe even for the other prompt too
+DETERMINE_CONSENSUS = """You are a highly capable moderator of a debate between agents. These debators are analyzing the reasoning traces of some other agent that failed to answer the question it was given and trying to determine why it failed.
+You will view this debate, determine which debator had the most convincing argument, and output their view as succinctly as possible. 
 
-
-Debator 1 arguing: {negative_response}
-You, as the moderator, will evaluate both sides' answers and determine if there is a clear preference for an answer candidate. If so, please summarize your reasons for supporting affirmative/negative side. Then summarize the verdict that you feel is correct, and the debate will conclude. 
-If not, the debate will continue to the next round."""
-
+Debate log:
+{debate_log}
+"""
 
 react_agent_prompt = PromptTemplate(
                         input_variables=["examples", "question", "scratchpad"],
@@ -205,41 +225,25 @@ reflect_prompt = PromptTemplate(
                         template = REFLECT_INSTRUCTION,
                         )
 
-## Debate prompt formats ##
-# debate_initial_prompt = PromptTemplate(
-#                         input_variables=["agent_id", "context", "question"],
-#                         template=DEBATE_INITIAL_INSTRUCTION,
-#                         )
-
-# debate_followup_prompt = PromptTemplate(
-#                         input_variables=["agent_id", "peer_responses", "context", "question"],
-#                         template=DEBATE_FOLLOWUP_INSTRUCTION,
-#                         )
-
 # Debate, reflection prompts
 debate_meta_reflection_prompt = PromptTemplate(
                                 input_variables=["examples"],
                                 template=DEBATER_META_PROMPT_REFLECTION
                                 )
 
-debate_affirmative_reflection_prompt = PromptTemplate(
-                                input_variables= ["question", "scratchpad"],
-                                template=DEBATOR_AFFIRMATIVE_PROMPT_REFLECTION
-                                )
-
-debate_negative_reflection_prompt = PromptTemplate(
-                                input_variables= ["question", "scratchpad", "debator_response"],
-                                template=DEBATOR_NEGATIVE_PROMPT_REFLECTION
-                                )
+debator_initial_prompt = PromptTemplate(
+                            input_variables = ["question", "scratchpad"],
+                            template = DEBATOR_INITIAL_PROMPT
+                            )
 
 debator_response_prompt = PromptTemplate( 
-                                input_variables=["debator_response"],
-                                template=DEBATOR_REPLY
+                            input_variables=["debator_responses"],
+                            template=DEBATOR_REPLY
+                            )
+
+consensus_reached_prompt = PromptTemplate(template=CONSENSUS_REACHED, input_variables=["debate_log"])
+
+determine_consensus_prompt = PromptTemplate(
+                                input_variables=["debate_log"],
+                                template=DETERMINE_CONSENSUS
                                 )
-
-judge_meta_reflection_prompt = PromptTemplate(template=JUDGE_META_PROMPT_REFLECTION, input_variables=["examples"])
-
-judge_end_of_round_reflection_prompt = PromptTemplate(
-                                        input_variables=["affirmative_response", "negative_response", "round_num"],
-                                        template=JUDGE_END_OF_ROUND_PROMPT_REFLECTION
-                                        )
