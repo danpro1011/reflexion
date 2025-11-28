@@ -138,7 +138,7 @@ class DebateCoordinator:
         #TODO: question scratchpad can either be added here or in inital repsonse 
         for indx in range(num_debators):
             llm = AnyOpenAILLM(
-                temperature=.25*(1+indx),
+                temperature=.30*(1+indx),
                 max_tokens=256,
                 model_name="gpt-3.5-turbo",
                 model_kwargs={"stop": "\n"},
@@ -209,9 +209,9 @@ class DebateCoordinator:
         #Apparently, python syntax is different from json syntax, and if the bool is loaded pythonically, json.loads crashes
         safe = verdict.replace("True", "true").replace("False", "false").replace("None", "null")
         verdict = json.loads(safe)
+        # print(verdict)
 
-
-        return verdict["consensus_reached"], verdict["debator_id"]
+        return verdict["consensus_reached"], verdict.get("debator_id",-1)
     
     def _extract_reflection(self, text) -> str:
         """
@@ -228,12 +228,13 @@ class DebateCoordinator:
         pattern = re.compile(r"Debator (\d+):\s*(.*?)\n(?=Debator \d+:|$)", re.DOTALL)
         matches = pattern.findall(self.debate_history)
 
+        resp = ""
         for debator_id, text in matches:
             if int(debator_id) == target_debator_id:
-               return text
-            
-        print("ERROR: debator id not found")
-        return ""
+               resp = text
+        
+        if resp == "": print("ERROR: debator id not found")
+        return resp
     
     def _update_debate_history(self, new_round):
         #Tracking the round may not be necessary
