@@ -168,9 +168,8 @@ Reflection:"""
 
 # No more 'you are a debator' thing, which IMO probably for the best
 # Typical reflection prompt it's labeled as 'your' reasoning traces, I think for the structure of the 'debate' it makes more sense to say its another model's reasoning traces -> maybe not, let's see
-DEBATER_META_PROMPT_REFLECTION = """You are an expert reasoning agent that's capable of improving through self-reflection. You will be given a previous reasoning trial in which you were given access to an Docstore API environment and a question to answer.
-You were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>], or you used up your set number of reasoning steps. Diagnose a possible reason for failure and devise a new, specific, high level plan that aims to mitigate the same failure. 
-Use complete sentences.
+DEBATER_META_PROMPT_REFLECTION = """You are an advanced reasoning agent that's capable of improving through self-reflection. You will be given a previous reasoning trial in which you were given access to an Docstore API environment and a question to answer.
+You were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>], or you used up your set number of reasoning steps. In a few sentences, Diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. Use complete sentences.  
 
 A few examples of such reflections are:
 {examples}'
