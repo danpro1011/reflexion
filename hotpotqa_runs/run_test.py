@@ -5,8 +5,9 @@ from agents import ReactReflectAgent, ReactAgent, ReflexionStrategy, ReactDebate
 
 
 if __name__ == "__main__":
+    num_debators = 2
     hotpot = joblib.load('data/hotpot-qa-distractor-sample.joblib').reset_index(drop = True)
-    agents = [ReactDebateReflectAgent(row['question'], row['answer']) for _, row in hotpot.iterrows()]
+    agents = [ReactDebateReflectAgent(question = row['question'], key= row['answer'], num_debators=num_debators) for _, row in hotpot.iterrows()]
     
     trial = 0
     log = ''
@@ -21,9 +22,12 @@ if __name__ == "__main__":
         
         
     root  = 'root/'
-    with open(os.path.join(root, 'ReAct', "Debate_v1", f'{len(agents)}_questions_{trial}_trials.txt'), 'w') as f:
+    dir_path = os.path.join('root/', 'ReAct', "Debate_v3")
+    os.makedirs(dir_path, exist_ok=True)
+
+    with open(os.path.join(dir_path, f'{len(agents)}_questions_{trial}_trials_{num_debators}_debators.txt'), 'w') as f:
         f.write(log)
         
-    # save_agents(agents, os.path.join('ReAct',"Debate_v1", 'agents'))
+    # # save_agents(agents, os.path.join('ReAct',"Debate_v1", 'agents'))
 
         

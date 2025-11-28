@@ -400,6 +400,10 @@ class ReactReflectAgent(ReactAgent):
    
 
 class ReactDebateReflectAgent(ReactReflectAgent):
+    #NOTE: So it turns out that previous reflections aren't actually kept anywhere, and each new reflection is generated on the spot
+    #based off of the previous trials' actions, not at all accounting for the reflections that inspired them. This is a potential avenue to fix
+    #however not totally clear how to do so, and perhaps more importantly, this kinda messes with ablation with previous reflexion strategies
+
     #All that needs to change for this class is prompt_reflection function, this should utilize the debate.py stuff
     def __init__(self,
                  question: str,
@@ -410,6 +414,7 @@ class ReactDebateReflectAgent(ReactReflectAgent):
                  docstore = None,
                  react_llm = None,
                  reflect_llm = None,
+                 num_debators: int = 2
                  ) -> None:
 
         super().__init__(question, key, max_steps, agent_prompt, docstore, react_llm)
@@ -432,9 +437,10 @@ class ReactDebateReflectAgent(ReactReflectAgent):
         self.reflect_examples = REFLECTIONS
         self.reflections: List[str] = []
         self.reflections_str: str = ''
+        self.num_debators = num_debators
 
     def prompt_reflection(self) -> str:
-        return self.debate_reflector.run(num_debators=2, scratchpad=self.scratchpad)
+        return self.debate_reflector.run(num_debators=self.num_debators, scratchpad=truncate_scratchpad(self.scratchpad, tokenizer=self.enc))
 
 
 

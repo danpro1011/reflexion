@@ -77,7 +77,6 @@ class DebateLLM:
 
     # The prompt for this should pretty much always be the same, so I don't see the need to pass it in as an argument
     def debate_response(self, debate_history) -> str:
-        
         question_context = f"Previous Trial:\nQuestion{self.question}{self.scratchpad}\nThese are the reflections that other agents analyzing your reasoning traces came up with:"
         question_context = HumanMessage(content = question_context)
 
@@ -114,13 +113,9 @@ class DebateCoordinator:
         question: str,
         answer_key: str,
         # scratchpad: str,
-        num_debators: int = 2,
         max_num_rounds: int = 5, #This is the hard max, not recommended or average number of runs
         llm: AnyOpenAILLM = None
     ) -> None:
-        if num_debators < 1:
-            raise ValueError("num_debators must be >= 1 for debate.")
-        
         self.question = question
         self.answer_key = answer_key
         self.max_num_rounds = max(1, max_num_rounds)
@@ -130,8 +125,6 @@ class DebateCoordinator:
         #TODO: Better functionality for changing the LLM model
         self.model_name = "gpt-3.5-turbo" 
 
-        # Enforcing that all judge outputs follow the desired format
-        #I think don't use this llm wrapper just for here
         self.llm = llm or AnyOpenAILLM(
             temperature=0,
             max_tokens=256,
@@ -144,6 +137,12 @@ class DebateCoordinator:
         debators: List[DebateLLM] = []
         #TODO: question scratchpad can either be added here or in inital repsonse 
         for indx in range(num_debators):
+            llm = AnyOpenAILLM(
+                temperature=.25*(1+indx),
+                max_tokens=256,
+                model_name="gpt-3.5-turbo",
+                model_kwargs={"stop": "\n"},
+            )
             debators.append(
                 DebateLLM(
                     question=self.question,
@@ -160,7 +159,7 @@ class DebateCoordinator:
         # just based off of how its designed right now
         rounds: List[List] = []
 
-        debators = self._build_debators(num_debators,scratchpad, llm = self.llm) 
+        debators = self._build_debators(num_debators,scratchpad) 
         
         num_debate_rounds = 0
         curr_round = []
@@ -182,7 +181,9 @@ class DebateCoordinator:
             rounds.append(curr_round)
             curr_round = []
 
-            consensus_reached, consensus = self._find_consensus()
+            consensus_reached, debator_id = self._find_consensus()
+
+            consensus = self._extract_debator_response(debator_id)
             
             if consensus_reached:
                 break
@@ -209,12 +210,34 @@ class DebateCoordinator:
         safe = verdict.replace("True", "true").replace("False", "false").replace("None", "null")
         verdict = json.loads(safe)
 
-        return verdict["consensus_reached"], verdict["consensus"]
+
+        return verdict["consensus_reached"], verdict["debator_id"]
+    
+    def _extract_reflection(self, text) -> str:
+        """
+        Assuming that the output passed into text is of the format '<sometext> Reflection[<sentence>].
+        And we extract the <sentence> inside of the Reflection block.
+        """
+        match = re.search(r"Reflection\[(.*?)\]", text, re.DOTALL)
+        if not match:
+            print("Not able to extract the reflection from ", text)
+            return ""
+        return match.group(1).strip()
         
+    def _extract_debator_response(self, target_debator_id) -> str:
+        pattern = re.compile(r"Debator (\d+):\s*(.*?)\n(?=Debator \d+:|$)", re.DOTALL)
+        matches = pattern.findall(self.debate_history)
+
+        for debator_id, text in matches:
+            if int(debator_id) == target_debator_id:
+               return text
+            
+        print("ERROR: debator id not found")
+        return ""
     
     def _update_debate_history(self, new_round):
         #Tracking the round may not be necessary
-        self.debate_history += "--"*5 + f"Start of round {self.round_number}" + "--"*5
+        self.debate_history += "--"*5 + f"Start of round {self.round_number}" + "--"*5 + '\n'
 
         for indx, response in enumerate(new_round):
             self.debate_history += f"Debator {indx}: " + response + "\n"

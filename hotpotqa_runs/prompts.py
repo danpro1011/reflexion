@@ -166,11 +166,11 @@ Reflection:"""
 #  Using the opinion of other agents as additional advice, can you give an updated response ..."
 
 
-
 # No more 'you are a debator' thing, which IMO probably for the best
 # Typical reflection prompt it's labeled as 'your' reasoning traces, I think for the structure of the 'debate' it makes more sense to say its another model's reasoning traces -> maybe not, let's see
 DEBATER_META_PROMPT_REFLECTION = """You are a highly sophisticated reasoning agent that's capable of improving through self-reflection. You will be given a previous reasoning trial in which you were given access to an Docstore API environment and a question to answer.
-You were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>], or you used up your set number of reasoning steps. In a few sentences, Diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. Use complete sentences.  
+You were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>], or you used up your set number of reasoning steps. Diagnose a possible reason for failure and devise a new, concise, specific, high level plan that aims to mitigate the same failure. 
+Use complete sentences.
 
 A few examples of such reflections are:
 {examples}'
@@ -194,8 +194,8 @@ Using the opinion of other agents as additional advice, can you give an updated 
 
 # One prompt to search for and extract a consensus, if there is one
 CONSENSUS_REACHED = """You are a highly capable moderator of a debate between agents. These debators are analyzing the reasoning traces of some other agent that failed to answer the question it was given and trying to determine why it failed.
-You will view their arguments and determine whether or not the debators have come to a consensus. If they've reached a consensus, then summarize the consensus view as succinctly as possible. 
-Output your response as {{\"consensus_reached\": True or False, \"consensus\": \"\"}} don't include any other sentences or words outside of the json. 
+You will view their arguments and determine whether or not the debators have come to a consensus. If they've reached a consensus, then output the id of the debator who's stance best reflects the consensus, as well as your reasoning for why.
+Output your response as {{consensus_reached: True or False, \"debator_id\": int, \"reason\": \"\"}} don't inslude any other sentences or words outside of the json. 
 
 Debate log:
 {debate_log}
