@@ -1,17 +1,15 @@
 import os
 from multiprocessing import Pool
+import json
 import joblib
 from util import summarize_react_trial, log_react_trial, save_agents
 from agents import ReactReflectAgent, ReactAgent, ReflexionStrategy, ReactDebateReflectAgent
-
-SHARED_LOG = ""
 
 def run_single_agent_trial(agent):
     agent.run()
     return agent
 
-
-#TODO: Test this on some dummy agent before losing 5$ again
+#TODO: No idea if this actually works Test this on some dummy agent before losing 5$ again
 def run_test_multi_process(num_trails = 5, num_debators = 2):
     hotpot = joblib.load('data/hotpot-qa-distractor-sample.joblib').reset_index(drop = True)
     agents = [ReactDebateReflectAgent(question = row['question'], key= row['answer'], num_debators=num_debators) for _, row in hotpot.iterrows()]
@@ -29,9 +27,16 @@ def run_test_multi_process(num_trails = 5, num_debators = 2):
     with open(os.path.join(dir_path, f'{len(agents)}_questions_{trial}_trials_{num_debators}_debators.txt'), 'w') as f:
         f.write(log)
 
-def run_test_single_process():
+def run_test_single_process(hard_only = True):
     num_debators = 2
     hotpot = joblib.load('data/hotpot-qa-distractor-sample.joblib').reset_index(drop = True)
+
+    if hard_only:
+        with open("hard_questions.json", "r") as file:
+            hard_questions = json.load(file)
+
+        hotpot = hotpot[hotpot["question"].isin(hard_questions)]
+    
     agents = [ReactDebateReflectAgent(question = row['question'], key= row['answer'], num_debators=num_debators) for _, row in hotpot.iterrows()]
     
     trial = 0
@@ -55,7 +60,7 @@ def run_test_single_process():
 
 
 if __name__ == "__main__":
-    # run_test_single_process()
-    run_test_multi_process()
+    run_test_single_process(hard_only=True)
+    # run_test_multi_process()
 
         
