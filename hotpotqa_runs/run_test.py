@@ -13,6 +13,7 @@ if __name__ == "__main__":
     for i in range(5):
         for agent in [a for a in agents if not a.is_correct()]:
             agent.run()
+            break
         trial += 1
         log += log_react_trial(agents, trial)
         correct, incorrect, halted = summarize_react_trial(agents)
