@@ -54,8 +54,8 @@ def run_test_multi_process(num_trails = 5, num_debators = 2):
     #     f.write(log)
 
 
-def run_test_single_process(hard_only = True):
-    num_debators = 3
+def run_test_single_process(hard_only = False, num_debators = 2, trails = 5):
+    num_debators = num_debators
     hotpot = joblib.load('data/hotpot-qa-distractor-sample.joblib').reset_index(drop = True)
 
     if hard_only:
@@ -68,7 +68,7 @@ def run_test_single_process(hard_only = True):
     
     trial = 0
     log = ''
-    for i in range(5):
+    for i in range(trails):
         for agent in [a for a in agents if not a.is_correct()]:
             agent.run()
         trial += 1
@@ -78,7 +78,7 @@ def run_test_single_process(hard_only = True):
         
         
     root  = 'root/'
-    dir_path = os.path.join('root/', 'ReAct', "Debate_v3")
+    dir_path = os.path.join('root/', 'ReAct', "Debate_v4")
     os.makedirs(dir_path, exist_ok=True)
 
     with open(os.path.join(dir_path, f'{len(agents)}_questions_{trial}_trials_{num_debators}_debators.txt'), 'w') as f:
@@ -87,7 +87,8 @@ def run_test_single_process(hard_only = True):
 
 
 if __name__ == "__main__":
-    run_test_single_process(hard_only=True)
+    run_test_single_process(num_debators=3, trails=5)
+    
     # run_test_multi_process()
 
         

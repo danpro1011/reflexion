@@ -156,7 +156,7 @@ class DebateCoordinator:
         debators: List[DebateLLM] = []
         for indx in range(num_debators):
             llm = AnyOpenAILLM(
-                temperature=.30*(indx),
+                temperature=.33*(indx),
                 max_tokens=256,
                 model_name="gpt-3.5-turbo",
                 model_kwargs={"stop": "\n"},
@@ -226,7 +226,13 @@ class DebateCoordinator:
         verdict = self.llm(consensus_reached_prompt.format(debate_log=self.debate_history))
         #Apparently, python syntax is different from json syntax, and if the bool is loaded pythonically, json.loads crashes
         safe = verdict.replace("True", "true").replace("False", "false").replace("None", "null")
-        verdict = json.loads(safe)
+        
+        try: 
+            verdict = json.loads(safe)
+        except:
+            #Even then, gpt still finds way to not return the proper format:
+            print("ERROR: Unable to load ", safe)
+            verdict = {"consensus_reached": False, "debator_id": -1}
         # print(verdict)
 
         return verdict["consensus_reached"], verdict.get("debator_id",-1)
