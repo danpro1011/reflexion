@@ -15,7 +15,6 @@ load_dotenv()
 
 class AnyOpenAILLM:
     def __init__(self, *args, **kwargs):
-        # Determine model type from the kwargs
         model_name = kwargs.get('model_name', 'gpt-3.5-turbo')
         if model_name.split('-')[0] == 'text':
             self.model = OpenAI(*args, **kwargs)
@@ -26,19 +25,21 @@ class AnyOpenAILLM:
 
     def __call__(self, prompt: str):
         if self.model_type == 'completion':
-            return self.model(prompt)
+            return self.model.invoke(prompt)
         else:
-            return self.model(
+            return self.model.invoke(
                 [
                     HumanMessage(
                         content=prompt,
                     )
                 ]
             ).content
-        
-    #Seperate function from the base 'call' method in the case where I want to pass in the meta prompt and don't need the __call__ wrapping
+
     def query(self, query):
-        return self.model(query).content
+        if self.model_type == 'completion':
+            return self.model.invoke(query)
+        else:
+            return self.model.invoke(query).content
 
 class LocalLLM:
     """Local HuggingFace model wrapper"""

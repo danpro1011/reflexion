@@ -15,8 +15,16 @@ from util import log_trial, save_agents
 
 
 def load_dataset(path: str) -> pd.DataFrame:
-    # Ensure legacy pandas index types are registered for joblib
-    importlib.import_module("pandas.core.indexes.numeric")
+    import sys
+    import types
+    try:
+        importlib.import_module("pandas.core.indexes.numeric")
+    except ModuleNotFoundError:
+        numeric_module = types.ModuleType('pandas.core.indexes.numeric')
+        numeric_module.Int64Index = pd.Index
+        numeric_module.UInt64Index = pd.Index
+        numeric_module.Float64Index = pd.Index
+        sys.modules['pandas.core.indexes.numeric'] = numeric_module
     df = joblib.load(path)
     if not isinstance(df, pd.DataFrame):
         raise ValueError(f"Expected DataFrame, got {type(df)}")
