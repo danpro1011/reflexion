@@ -226,21 +226,7 @@ class ReactAgent:
             docstore = Wikipedia()
         self.docstore = DocstoreExplorer(docstore) # Search, Lookup
 
-        # Initialize LLM with default if not provided
-        if react_llm is None:
-            if 'OPENAI_API_KEY' in os.environ:
-                self.llm = AnyOpenAILLM(
-                    temperature=0,
-                    max_tokens=100,
-                    model_name="gpt-3.5-turbo",
-                    model_kwargs={"stop": "\n"},
-                    openai_api_key=os.environ['OPENAI_API_KEY'])
-            else:
-                raise ValueError("react_llm must be provided or OPENAI_API_KEY must be set")
-        else:
-            self.llm = react_llm
-        
-        self.enc = tiktoken.encoding_for_model("text-davinci-003")
+        self.initialize_llm_tokenizer(react_llm=react_llm)
 
         self.__reset_agent()
 
@@ -325,6 +311,29 @@ class ReactAgent:
         self.question = question
         self.key = key
 
+    def initialize_llm_tokenizer(self, react_llm = None) -> None:
+        '''Helper function that allows us to pickle/unpickle our agents to allow for multi-threading and other support'''
+        if react_llm is None:
+            if 'OPENAI_API_KEY' in os.environ:
+                self.llm = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=100,
+                    model_name="gpt-3.5-turbo",
+                    model_kwargs={"stop": "\n"},
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+            else:
+                raise ValueError("react_llm must be provided or OPENAI_API_KEY must be set")
+        else:
+            self.llm = react_llm
+        
+        self.enc = tiktoken.encoding_for_model("text-davinci-003")
+        
+    def deinitialize_llm_tokenizer(self) -> None:
+        '''Helper function that allows us to pickle/unpickle our agents to allow for multi-threading and other support'''
+        self.llm = None
+        self.enc = None
+
+
 class ReactReflectAgent(ReactAgent):
     def __init__(self,
                  question: str,
@@ -400,6 +409,10 @@ class ReactReflectAgent(ReactAgent):
    
 
 class ReactDebateReflectAgent(ReactReflectAgent):
+    #NOTE: So it turns out that previous reflections aren't actually kept anywhere, and each new reflection is generated on the spot
+    #based off of the previous trials' actions, not at all accounting for the reflections that inspired them. This is a potential avenue to fix
+    #however not totally clear how to do so, and perhaps more importantly, this kinda messes with ablation with previous reflexion strategies
+
     #All that needs to change for this class is prompt_reflection function, this should utilize the debate.py stuff
     def __init__(self,
                  question: str,
@@ -410,6 +423,7 @@ class ReactDebateReflectAgent(ReactReflectAgent):
                  docstore = None,
                  react_llm = None,
                  reflect_llm = None,
+                 num_debators: int = 2
                  ) -> None:
 
         super().__init__(question, key, max_steps, agent_prompt, docstore, react_llm)
@@ -432,9 +446,10 @@ class ReactDebateReflectAgent(ReactReflectAgent):
         self.reflect_examples = REFLECTIONS
         self.reflections: List[str] = []
         self.reflections_str: str = ''
+        self.num_debators = num_debators
 
     def prompt_reflection(self) -> str:
-        return self.debate_reflector.run(self.scratchpad)
+        return self.debate_reflector.run(num_debators=self.num_debators, scratchpad=truncate_scratchpad(self.scratchpad, tokenizer=self.enc))
 
 
 
