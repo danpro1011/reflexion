@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, TypedDict
 import pprint as pp
+from util import translate_text
 
 from llm import AnyOpenAILLM
 from prompts import debate_meta_reflection_prompt, debator_response_prompt, debator_initial_prompt, consensus_reached_prompt, determine_consensus_prompt
@@ -53,6 +54,8 @@ class DebateLLM:
         debate_id: int,
         llm: Optional[AnyOpenAILLM] = None,
         system_prompt: PromptTemplate =  debate_meta_reflection_prompt,
+        language: str = "en", #NOTE: This has to be the langauge string as specified by (https://docs.cloud.google.com/translate/docs/languages#nmt)
+        translator: str = "bing"
     ) -> None:
         self.question = question
         self.scratchpad = scratchpad
@@ -63,32 +66,73 @@ class DebateLLM:
             model_kwargs={"stop": "\n"}, #Makes it stop after a new line, to limit long responses
         )
         self.debate_id = debate_id
+        self.language = language
+        self.translator = translator
 
         #This stays constant so convienient to just save it here 
         self.system_prompt = SystemMessage(content=system_prompt.format(examples=REFLECTIONS))
 
     def initial_response(self) -> str:
-        prompt = debator_initial_prompt.format(question=self.question, scratchpad = self.scratchpad)
-        initial_message = HumanMessage(content = prompt)
-        
-        response = self.llm.query([self.system_prompt, initial_message])
+        #Idea here is simple enough, just translate every prompt given to other language for its 'thinking' process, and then translate back
+        if self.language != "en":
+            question = translate_text(self.question, source_language = "en", target_language = self.language)
+            scratchpad = translate_text(self.question, source_language = "en", target_language = self.language)
+
+            system_prompt = translate_text(self.system_prompt.content, source_language = "en", target_language = self.language) 
+            prompt = debator_initial_prompt.format(question=question, scratchpad = scratchpad)
+
+            system_message = SystemMessage(content=system_prompt)
+            initial_message = HumanMessage(content = prompt)
+            
+            response = self.llm.query([system_message, initial_message])
+            response = translate_text(response, source_language = self.language, target_language = "en")
+            
+        else:
+            prompt = debator_initial_prompt.format(question=self.question, scratchpad = self.scratchpad)
+            initial_message = HumanMessage(content = prompt)
+            
+            response = self.llm.query([self.system_prompt, initial_message])
 
         return response
 
     # The prompt for this should pretty much always be the same, so I don't see the need to pass it in as an argument
     def debate_response(self, debate_history) -> str:
-        question_context = f"Previous Trial:\nQuestion{self.question}{self.scratchpad}\nThese are the reflections that other agents analyzing your reasoning traces came up with:"
-        question_context = HumanMessage(content = question_context)
+        if self.language != "en":
+            # Parts of the prompt that need to be translated
+            question_context = f"Previous Trial:\nQuestion{self.question}{self.scratchpad}\nThese are the reflections that other agents analyzing your reasoning traces came up with:"
+            response_question = "Using the opinion of other agents as additional advice, can you give an updated response ..." 
+            debate_history = self._format_debate_history(debate_history, as_pormpt=False)
+            
+            # Use translation library to translate the parts
+            question_context = translate_text(question_context, source_language = "en", target_language = self.language)
+            debate_history = [translate_text(x, source_language = "en", target_language = self.language) for x in debate_history]
+            response_question = translate_text(response_question, source_language = "en", target_language = self.language)
 
-        debate_history = self._format_debate_history(debate_history)
+            # Format them in langchain 
+            question_context = HumanMessage(content = question_context)
+            response_question = HumanMessage(content = response_question)
+            #TODO: This is obviously not how it should be done, temporary for just initial testing
+            debate_history = [HumanMessage(content = x) for x in debate_history]
+            system_prompt = translate_text(self.system_prompt.content, source_language = "en", target_language = self.language) 
 
-        response_question = HumanMessage(content = "Using the opinion of other agents as additional advice, can you give an updated response ...")
-        #Order is system_prompt + question/scratchpad context + debate_history + finally the question
-        response = self.llm.query([self.system_prompt, question_context, *debate_history, response_question])
+            system_message = SystemMessage(content=system_prompt)
+            
+            response = self.llm.query([system_message, question_context, *debate_history, response_question])
+            response = translate_text(response, source_language = self.language, target_language = "en")
+            
+        else:
+            question_context = f"Previous Trial:\nQuestion{self.question}{self.scratchpad}\nThese are the reflections that other agents analyzing your reasoning traces came up with:"
+            question_context = HumanMessage(content = question_context)
+
+            debate_history = self._format_debate_history(debate_history)
+
+            response_question = HumanMessage(content = "Using the opinion of other agents as additional advice, can you give an updated response ...")
+            #Order is system_prompt + question/scratchpad context + debate_history + finally the question
+            response = self.llm.query([self.system_prompt, question_context, *debate_history, response_question])
 
         return response
     
-    def _format_debate_history(self, debate_history) -> List:
+    def _format_debate_history(self, debate_history, as_pormpt:bool = True) -> List:
         """
         Because of how the old LangChain library worked, this function is needed. It basically takes the debate history
         and formats it so that the LLM knows that the responses that it gave came from itself
@@ -99,10 +143,13 @@ class DebateLLM:
 
         formatted_message = []
         for debator_id, text in matches:
-            if debator_id == self.debate_id:
-               formatted_message.append(AIMessage(content=text)) 
+            if as_pormpt:
+                if debator_id == self.debate_id:
+                   formatted_message.append(AIMessage(content=text)) 
+                else:
+                   formatted_message.append(HumanMessage(content= f"Debator {debator_id}" + text)) 
             else:
-               formatted_message.append(HumanMessage(content= f"Debator {debator_id}" + text)) 
+                formatted_message.append(text)
         
         return formatted_message
 
@@ -135,20 +182,30 @@ class DebateCoordinator:
 
     def _build_debators(self, num_debators: int, scratchpad:str, llm= None) -> List[DebateLLM]:
         debators: List[DebateLLM] = []
-        #TODO: question scratchpad can either be added here or in inital repsonse 
+        # Idea behind this implementation is that altering the language is enough to alter the output, a higher temp shouldn't be needed
         for indx in range(num_debators):
             llm = AnyOpenAILLM(
-                temperature=.30*(1+indx),
+                temperature=0,
                 max_tokens=256,
                 model_name="gpt-3.5-turbo",
                 model_kwargs={"stop": "\n"},
             )
+
+            #TODO: Better way to specify languages of debators from the Debate Coordinator interface
+            if indx == 0:
+                language = "en"
+            if indx == 1:
+                language = "es"
+            # if indx == 2:
+            #     language = "es"
+            
             debators.append(
                 DebateLLM(
                     question=self.question,
                     scratchpad=scratchpad,
                     llm=llm,
-                    debate_id=indx
+                    debate_id=indx,
+                    language=language
                 )
             )
         return debators
