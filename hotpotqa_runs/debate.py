@@ -15,9 +15,9 @@ try:
 except ImportError:
     from langchain.prompts import PromptTemplate
 try:
-    from langchain.schema import HumanMessage, SystemMessage, AIMessage
+    from langchain.schema import HumanMessage, SystemMessage, AIMessage, ChatMessage
 except ImportError:
-    from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+    from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ChatMessage
 
 try:
     from langchain_openai import ChatOpenAI, OpenAI
@@ -74,29 +74,50 @@ class DebateLLM:
 
     def initial_response(self) -> str:
         #Idea here is simple enough, just translate every prompt given to other language for its 'thinking' process, and then translate back
+        prompt = debator_initial_prompt.format(
+                question=self.question,
+                scratchpad=self.scratchpad
+                )
+        
+        final_messages = [self.system_prompt, HumanMessage(content=prompt)]
+
         if self.language != "en":
-            question = translate_text(self.question, source_language = "en", target_language = self.language)
-            scratchpad = translate_text(self.question, source_language = "en", target_language = self.language)
+            final_messages = [self.translate_msg(m, self.language) for m in final_messages]
 
-            system_prompt = translate_text(self.system_prompt.content, source_language = "en", target_language = self.language) 
-            prompt = debator_initial_prompt.format(question=question, scratchpad = scratchpad)
+        output = self.llm.query(final_messages)
 
-            system_message = SystemMessage(content=system_prompt)
-            initial_message = HumanMessage(content = prompt)
-            
-            response = self.llm.query([system_message, initial_message])
-            response = translate_text(response, source_language = self.language, target_language = "en")
-            
-        else:
-            prompt = debator_initial_prompt.format(question=self.question, scratchpad = self.scratchpad)
-            initial_message = HumanMessage(content = prompt)
-            
-            response = self.llm.query([self.system_prompt, initial_message])
+        if self.language != "en":
+            output = translate_text(output, source_language=self.language, target_language="en")
 
-        return response
+        return output
 
     # The prompt for this should pretty much always be the same, so I don't see the need to pass it in as an argument
     def debate_response(self, debate_history) -> str:
+        question_msg = HumanMessage(content=
+        f"Previous Trial:\n"
+        f"Question: {self.question}\n"
+        f"{self.scratchpad}\n"
+        f"These are the reflections that other agents analyzing your reasoning traces came up with:"
+        )
+        debate_messages = self._format_debate_history(debate_history)
+
+        final_messages = [
+            self.system_prompt,
+            question_msg,
+            *debate_messages,
+            HumanMessage(content="Using the opinions of other agents as additional advice, give an updated response...")
+        ]
+
+        # translate (if needed)
+        if self.language != "en":
+            final_messages = [self.translate_msg(m, self.language) for m in final_messages]
+
+        output = self.llm.query(final_messages)
+
+        if self.language != "en":
+            output = translate_text(output, source_language=self.language, target_language="en")
+
+        return output
         if self.language != "en":
             # Parts of the prompt that need to be translated
             question_context = f"Previous Trial:\nQuestion{self.question}{self.scratchpad}\nThese are the reflections that other agents analyzing your reasoning traces came up with:"
@@ -113,11 +134,9 @@ class DebateLLM:
             response_question = HumanMessage(content = response_question)
             #TODO: This is obviously not how it should be done, temporary for just initial testing
             debate_history = [HumanMessage(content = x) for x in debate_history]
-            system_prompt = translate_text(self.system_prompt.content, source_language = "en", target_language = self.language) 
 
-            system_message = SystemMessage(content=system_prompt)
             
-            response = self.llm.query([system_message, question_context, *debate_history, response_question])
+            response = self.llm.query([self.system_prompt, question_context, *debate_history, response_question])
             response = translate_text(response, source_language = self.language, target_language = "en")
             
         else:
@@ -132,26 +151,49 @@ class DebateLLM:
 
         return response
     
-    def _format_debate_history(self, debate_history, as_pormpt:bool = True) -> List:
+    def _format_debate_history(self, debate_history) -> List:
         """
         Because of how the old LangChain library worked, this function is needed. It basically takes the debate history
         and formats it so that the LLM knows that the responses that it gave came from itself
         """
 
-        pattern = re.compile(r"Debator (\d+):\s*(.*?)\n(?=Debator \d+:|$)", re.DOTALL)
-        matches = pattern.findall(debate_history)
+        # Capture groups:
+        #   (1) debator ID
+        #   (2) message content
+        pattern = re.compile(
+            r"Debator\s+(\d+):\s*(.*?)\n(?=Debator\s+\d+:|$)",
+            re.DOTALL
+        )
 
-        formatted_message = []
-        for debator_id, text in matches:
-            if as_pormpt:
-                if debator_id == self.debate_id:
-                   formatted_message.append(AIMessage(content=text)) 
-                else:
-                   formatted_message.append(HumanMessage(content= f"Debator {debator_id}" + text)) 
+        matches = pattern.findall(debate_history)
+        formatted_messages = []
+
+        for debator_id, content in matches:
+            debator_id = int(debator_id)
+
+            if debator_id == self.debate_id:
+                formatted_messages.append(
+                    AIMessage(content=content.strip())
+                )
             else:
-                formatted_message.append(text)
-        
-        return formatted_message
+                # It's recommended to use 'chat message' + role assistant for task like this rather than have it be part of 'human message' 
+                formatted_messages.append(
+                    ChatMessage(
+                        role="assistant",
+                        name=f"debator_{debator_id}",
+                        content=content.strip()
+                    )
+                )
+
+        return formatted_messages
+    
+    def translate_msg(self, msg, target):
+        '''Helper function that translates LangChain message while still keeping class structure intact'''
+        return type(msg)(content=translate_text(
+            msg.content,
+            source_language="en",
+            target_language=target,
+        ))
 
 #TODO: This class is written around the assumption that we're just using the openai llm, but it really should work for any LLM type
 class DebateCoordinator:
