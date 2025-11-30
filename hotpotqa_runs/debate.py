@@ -4,9 +4,11 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, TypedDict
 import pprint as pp
+import xml.etree.ElementTree as ET
+
 
 from llm import AnyOpenAILLM
-from prompts import debate_meta_reflection_prompt, debator_response_prompt, debator_initial_prompt, consensus_reached_prompt, determine_consensus_prompt
+from prompts import debate_meta_reflection_prompt, debator_response_prompt, debator_initial_prompt, consensus_reached_prompt, determine_consensus_prompt, verbalised_sampling_system_prompt
 from fewshots import REFLECTIONS
 
 try:
@@ -45,6 +47,24 @@ def extract_answer(completion: str) -> str:
         return match.group(1).strip()
     return completion.strip()
 
+def extract_text_tags_xml(s):
+    """Helper function to extract the answers from the verbalized sampling prompt"""
+    try:
+        wrapped = f"<root>{s}</root>"
+        root = ET.fromstring(wrapped)
+        texts = []
+        for elem in root.iter("text"):
+            if elem.text is None:
+                texts.append("")  # keep empty if <text></text> or <text/>
+            else:
+                texts.append(elem.text.strip())
+        return texts
+    except ET.ParseError:
+        # Fallback: regex (works on messy input)
+        pattern = r"<text\s*>(.*?)</text\s*>"
+        matches = re.findall(pattern, s, re.DOTALL | re.IGNORECASE)
+        return [m.strip() for m in matches]
+
 class DebateLLM:
     def __init__(
         self,
@@ -53,6 +73,7 @@ class DebateLLM:
         debate_id: int,
         llm: Optional[AnyOpenAILLM] = None,
         system_prompt: PromptTemplate =  debate_meta_reflection_prompt,
+        initial_position: str = ""
     ) -> None:
         self.question = question
         self.scratchpad = scratchpad
@@ -67,7 +88,12 @@ class DebateLLM:
         #This stays constant so convienient to just save it here 
         self.system_prompt = SystemMessage(content=system_prompt.format(examples=REFLECTIONS))
 
+        self.initial_position = initial_position
+
     def initial_response(self) -> str:
+        if self.initial_position != "":
+            return self.initial_position
+
         prompt = debator_initial_prompt.format(question=self.question, scratchpad = self.scratchpad)
         initial_message = HumanMessage(content = prompt)
         
@@ -131,7 +157,6 @@ class DebateCoordinator:
         self,
         question: str,
         answer_key: str,
-        # scratchpad: str,
         max_num_rounds: int = 5, #This is the hard max, not recommended or average number of runs
         llm: AnyOpenAILLM = None
     ) -> None:
@@ -154,9 +179,20 @@ class DebateCoordinator:
 
     def _build_debators(self, num_debators: int, scratchpad:str, llm= None) -> List[DebateLLM]:
         debators: List[DebateLLM] = []
+        #The way this works is that we're gonna generate the ideas from VS, then those ideas are gonna be the 'diversity' in each seperate debator
+        system_prompt = SystemMessage(content = verbalised_sampling_system_prompt.format())
+        prompt = debate_meta_reflection_prompt.format(examples=REFLECTIONS)
+
+        initial_message = HumanMessage(content=prompt)
+        prompt = debator_initial_prompt.format(question= self.question, scratchpad = scratchpad)
+        question = HumanMessage(content = prompt)
+
+        reflections = self.llm.query([system_prompt, initial_message, question])
+        reflections = extract_text_tags_xml(reflections)
+
         for indx in range(num_debators):
             llm = AnyOpenAILLM(
-                temperature=.33*(indx),
+                temperature=0,
                 max_tokens=256,
                 model_name="gpt-3.5-turbo",
                 model_kwargs={"stop": "\n"},
@@ -166,7 +202,8 @@ class DebateCoordinator:
                     question=self.question,
                     scratchpad=scratchpad,
                     llm=llm,
-                    debate_id=indx
+                    debate_id=indx,
+                    initial_position=reflections[indx]
                 )
             )
         return debators
@@ -223,17 +260,19 @@ class DebateCoordinator:
         Helper function that views the debate log and determines whether or not a verdict has been reached. 
         Right now just having the 'judge' llm do this, but there are other potential methods to accomplish a similar task
         """
-        verdict = self.llm(consensus_reached_prompt.format(debate_log=self.debate_history))
+        system_prompt = SystemMessage(content = consensus_reached_prompt.format())
+        question = HumanMessage(content = f"The debate log from the most recent round of debate is\n{self.debate_history}")
+        verdict = self.llm.query([system_prompt, question])
+
         #Apparently, python syntax is different from json syntax, and if the bool is loaded pythonically, json.loads crashes
         safe = verdict.replace("True", "true").replace("False", "false").replace("None", "null")
         
+        #Even then, gpt still finds way to not return the proper format:
         try: 
             verdict = json.loads(safe)
         except:
-            #Even then, gpt still finds way to not return the proper format:
             print("ERROR: Unable to load ", safe)
             verdict = {"consensus_reached": False, "debator_id": -1}
-        # print(verdict)
 
         return verdict["consensus_reached"], verdict.get("debator_id",-1)
     
@@ -261,6 +300,7 @@ class DebateCoordinator:
         return resp
     
     def _update_debate_history(self, new_round):
+        #TODO: If we're limiting the context window, maybe only show the last round of debate to the debators
         #Tracking the round may not be necessary
         self.debate_history += "--"*5 + f"Start of round {self.round_number}" + "--"*5 + '\n'
 

@@ -192,12 +192,11 @@ Using the opinion of other agents as additional advice, can you give an updated 
 #having a seperate judge LLM do this is the easiest solution, but is it the actually most effective??
 
 # One prompt to search for and extract a consensus, if there is one
-CONSENSUS_REACHED = """You are a highly capable judge monitoring a debate between two debators. These debators are analyzing the reasoning traces of some other agent that failed to answer the question it was given and trying to determine why it failed.
+CONSENSUS_REACHED = """You are a highly capable judge monitoring a debate. These debators are analyzing the reasoning traces of some other agent that failed to answer the question it was given and trying to determine why it failed.
 You will view their arguments and determine whether or not the debators have come to a consensus. If they've reached a consensus, then output the id of the debator who's stance best reflects the consensus, as well as your reasoning for why.
-Output your response as {{\"consensus_reached\": True or False, \"debator_id\": <int>, \"reason\": <str>}} don't include any other sentences or words outside of the json. 
+Remember that your job is to keep the debate going until its clear that all sides have reached a consensus.
 
-Debate log:
-{debate_log}
+Output your response as {{\"consensus_reached\": True or False, \"debator_id\": <int>, \"reason\": <str>}} don't include any other sentences or words outside of the json. 
 """
 
 #Another prompt to choose a verdict even if a consensus hasn't been reached.
@@ -208,6 +207,13 @@ You will view this debate, determine which debator had the most convincing argum
 Debate log:
 {debate_log}
 """
+
+#NOTE: Can add 'such that the probability of each response is less than x' to the end of the prompt
+VERBALISED_SAMPLING_SYSTEM_PROMPT = """You are a helpful assistant. For each query,
+please generate a set of five possible responses, each within a separate <response> tag.
+Responses should each include a <text> and a numeric <probability> in JSON format.
+Please sample at random from the full distribution."""
+
 
 react_agent_prompt = PromptTemplate(
                         input_variables=["examples", "question", "scratchpad"],
@@ -240,9 +246,11 @@ debator_response_prompt = PromptTemplate(
                             template=DEBATOR_REPLY
                             )
 
-consensus_reached_prompt = PromptTemplate(template=CONSENSUS_REACHED, input_variables=["debate_log"])
+consensus_reached_prompt = PromptTemplate(template=CONSENSUS_REACHED, input_variables=[])
 
 determine_consensus_prompt = PromptTemplate(
                                 input_variables=["debate_log"],
                                 template=DETERMINE_CONSENSUS
                                 )
+
+verbalised_sampling_system_prompt = PromptTemplate(template = VERBALISED_SAMPLING_SYSTEM_PROMPT, input_variables = [])
