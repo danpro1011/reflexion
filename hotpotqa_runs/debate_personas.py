@@ -83,9 +83,7 @@ class DebateLLM:
 
     def debate_response(self, debator_response: str, debate_history: str) -> str:
         debate_history_msgs = self._format_debate_history(debate_history)
-        prompt = debator_response_prompt.format(
-                debator_response = debator_response,
-        )
+        prompt = debator_response_prompt.format(debator_responses=debate_history)
 
         response_question = HumanMessage(content = prompt)
         response = self.llm.query([self.system_prompt, *debate_history_msgs, response_question])
@@ -218,7 +216,7 @@ class DebateCoordinator:
             rounds.append(curr_round)
             self._update_debate_history(curr_round)           
             
-            system_prompt = SystemMessage(content=judge_meta_reflection_prompt.format(examples = REFLECTIONS))
+            system_prompt = SystemMessage(content=judge_meta_reflection_prompt.format())
             
             # Handle case where we might have more than 2 agents, but prompt expects 2
             # For now, just taking first two for the judge prompt or last two

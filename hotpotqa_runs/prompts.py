@@ -246,3 +246,53 @@ determine_consensus_prompt = PromptTemplate(
                                 input_variables=["debate_log"],
                                 template=DETERMINE_CONSENSUS
                                 )
+
+# --- NEW PROMPTS FOR MAD-REFLEXION ---
+
+DEBATER_AFFIRMATIVE_PROMPT_REFLECTION = """Previous trial:
+Question: {question}{scratchpad}
+
+Diagnose the failure and propose a high-level plan to fix it.
+Reflection:"""
+
+DEBATER_NEGATIVE_PROMPT_REFLECTION = """Previous trial:
+Question: {question}{scratchpad}
+
+The other debater suggested: {debator_response}
+
+Do you agree with this diagnosis and plan? If not, provide your own critique and alternative plan.
+Reflection:"""
+
+JUDGE_META_PROMPT_REFLECTION = """You are a moderator. There are debaters discussing why a previous agent failed to answer a question.
+At the end of each round, you will evaluate their arguments and decide if they have reached a consensus on the best "Reflection" (diagnosis + plan).
+Output your response in the following json format:
+{{\"preference_found\": true or false, \"reason\": \"...\", \"summary_of_winning_position\": \"...\"}}
+"""
+
+JUDGE_END_OF_ROUND_PROMPT_REFLECTION = """Round {round_num} ended.
+Debator 0: {affirmative_response}
+Debator 1: {negative_response}
+
+Evaluate the arguments. If there is a clear, actionable plan that both agree on (or one is clearly superior), set preference_found to true and summarize it in 'summary_of_winning_position'.
+"""
+
+# Register the new templates
+debate_affirmative_reflection_prompt = PromptTemplate(
+    input_variables=["question", "scratchpad"],
+    template=DEBATER_AFFIRMATIVE_PROMPT_REFLECTION
+)
+
+debate_negative_reflection_prompt = PromptTemplate(
+    input_variables=["question", "scratchpad", "debator_response"],
+    template=DEBATER_NEGATIVE_PROMPT_REFLECTION
+)
+
+judge_meta_reflection_prompt = PromptTemplate(
+    input_variables= [], # Kept for compatibility, though not strictly used in template
+    template=JUDGE_META_PROMPT_REFLECTION
+)
+
+judge_end_of_round_reflection_prompt = PromptTemplate(
+    input_variables=["affirmative_response", "negative_response", "round_num"],
+    template=JUDGE_END_OF_ROUND_PROMPT_REFLECTION
+)
