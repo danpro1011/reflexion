@@ -78,7 +78,7 @@ def run_test_single_process(hard_only = False, num_debators = 2, trails = 5):
         
         
     root  = 'root/'
-    dir_path = os.path.join('root/', 'ReAct', "Debate_v4")
+    dir_path = os.path.join('root/', 'ReAct', "VS_Debate")
     os.makedirs(dir_path, exist_ok=True)
 
     with open(os.path.join(dir_path, f'{len(agents)}_questions_{trial}_trials_{num_debators}_debators.txt'), 'w') as f:
@@ -87,7 +87,7 @@ def run_test_single_process(hard_only = False, num_debators = 2, trails = 5):
 
 
 if __name__ == "__main__":
-    run_test_single_process(num_debators=3, trails=5)
+    run_test_single_process(num_debators=3, trails=7)
     
     # run_test_multi_process()
 
