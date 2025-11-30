@@ -226,21 +226,7 @@ class ReactAgent:
             docstore = Wikipedia()
         self.docstore = DocstoreExplorer(docstore) # Search, Lookup
 
-        # Initialize LLM with default if not provided
-        if react_llm is None:
-            if 'OPENAI_API_KEY' in os.environ:
-                self.llm = AnyOpenAILLM(
-                    temperature=0,
-                    max_tokens=100,
-                    model_name="gpt-3.5-turbo",
-                    model_kwargs={"stop": "\n"},
-                    openai_api_key=os.environ['OPENAI_API_KEY'])
-            else:
-                raise ValueError("react_llm must be provided or OPENAI_API_KEY must be set")
-        else:
-            self.llm = react_llm
-        
-        self.enc = tiktoken.encoding_for_model("text-davinci-003")
+        self.initialize_llm_tokenizer(react_llm=react_llm)
 
         self.__reset_agent()
 
@@ -324,6 +310,29 @@ class ReactAgent:
     def set_qa(self, question: str, key: str) -> None:
         self.question = question
         self.key = key
+
+    def initialize_llm_tokenizer(self, react_llm = None) -> None:
+        '''Helper function that allows us to pickle/unpickle our agents to allow for multi-threading and other support'''
+        if react_llm is None:
+            if 'OPENAI_API_KEY' in os.environ:
+                self.llm = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=100,
+                    model_name="gpt-3.5-turbo",
+                    model_kwargs={"stop": "\n"},
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+            else:
+                raise ValueError("react_llm must be provided or OPENAI_API_KEY must be set")
+        else:
+            self.llm = react_llm
+        
+        self.enc = tiktoken.encoding_for_model("text-davinci-003")
+        
+    def deinitialize_llm_tokenizer(self) -> None:
+        '''Helper function that allows us to pickle/unpickle our agents to allow for multi-threading and other support'''
+        self.llm = None
+        self.enc = None
+
 
 class ReactReflectAgent(ReactAgent):
     def __init__(self,

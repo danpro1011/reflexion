@@ -3,32 +3,59 @@ from multiprocessing import Pool
 import json
 import joblib
 from util import summarize_react_trial, log_react_trial, save_agents
+from prompts import react_agent_prompt
 from agents import ReactReflectAgent, ReactAgent, ReflexionStrategy, ReactDebateReflectAgent
 
+class DummyAgent(ReactAgent):
+
+    def __init__(self,
+             question: str,
+             key: str,
+             max_steps: int = 6,
+             agent_prompt= react_agent_prompt,
+             docstore = None,
+             react_llm = None,
+             agent_num= 0
+             ) -> None:
+        
+        super().__init__(question, key, max_steps, agent_prompt, docstore, react_llm)
+        self.agent_num = agent_num
+
+    def run(self):
+        self.scratchpad += "-"*self.agent_num + self.agent_num + "-"*self.agent_num + '\n'
+
+
 def run_single_agent_trial(agent):
+    agent.initialize_llm_tokenizer()
     agent.run()
     return agent
 
-#TODO: No idea if this actually works Test this on some dummy agent before losing 5$ again
+#TODO: No idea if this actually works Test this on some dummy agent before losing 5$ again -> Ok it does not
 def run_test_multi_process(num_trails = 5, num_debators = 2):
     hotpot = joblib.load('data/hotpot-qa-distractor-sample.joblib').reset_index(drop = True)
     agents = [ReactDebateReflectAgent(question = row['question'], key= row['answer'], num_debators=num_debators) for _, row in hotpot.iterrows()]
 
+    # Deinitialize all the non-pickleable variables before starting the threads
+    for agent in agents:
+        agent.deinitialize_llm_tokenizer()
+
     log = ''
-    for trial in num_trails:
+    for trial in range(num_trails):
         with Pool() as pool:
             new_agents = pool.map(run_single_agent_trial, agents)
             log += log_react_trial(new_agents, trial)
             
-    root  = 'root/'
-    dir_path = os.path.join('root/', 'ReAct', "Debate_v3")
-    os.makedirs(dir_path, exist_ok=True)
+    print(log)
+    # root  = 'root/'
+    # dir_path = os.path.join('root/', 'ReAct', "Debate_v3")
+    # os.makedirs(dir_path, exist_ok=True)
 
-    with open(os.path.join(dir_path, f'{len(agents)}_questions_{trial}_trials_{num_debators}_debators.txt'), 'w') as f:
-        f.write(log)
+    # with open(os.path.join(dir_path, f'{len(agents)}_questions_{trial}_trials_{num_debators}_debators.txt'), 'w') as f:
+    #     f.write(log)
+
 
 def run_test_single_process(hard_only = True):
-    num_debators = 2
+    num_debators = 3
     hotpot = joblib.load('data/hotpot-qa-distractor-sample.joblib').reset_index(drop = True)
 
     if hard_only:

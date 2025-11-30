@@ -14,9 +14,9 @@ try:
 except ImportError:
     from langchain.prompts import PromptTemplate
 try:
-    from langchain.schema import HumanMessage, SystemMessage, AIMessage
+    from langchain.schema import HumanMessage, SystemMessage, AIMessage, ChatMessage
 except ImportError:
-    from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+    from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ChatMessage
 
 try:
     from langchain_openai import ChatOpenAI, OpenAI
@@ -94,17 +94,36 @@ class DebateLLM:
         and formats it so that the LLM knows that the responses that it gave came from itself
         """
 
-        pattern = re.compile(r"Debator (\d+):\s*(.*?)\n(?=Debator \d+:|$)", re.DOTALL)
-        matches = pattern.findall(debate_history)
+        # Capture groups:
+        #   (1) debator ID
+        #   (2) message content
+        pattern = re.compile(
+            r"Debator\s+(\d+):\s*(.*?)\n(?=Debator\s+\d+:|$)",
+            re.DOTALL
+        )
 
-        formatted_message = []
-        for debator_id, text in matches:
+        matches = pattern.findall(debate_history)
+        formatted_messages = []
+
+        for debator_id, content in matches:
+            debator_id = int(debator_id)
+
             if debator_id == self.debate_id:
-               formatted_message.append(AIMessage(content=text)) 
+                formatted_messages.append(
+                    AIMessage(content=content.strip())
+                )
             else:
-               formatted_message.append(HumanMessage(content= f"Debator {debator_id}" + text)) 
-        
-        return formatted_message
+                # It's recommended to use 'chat message' + role assistant for task like this rather than have it be part of 'human message' 
+                formatted_messages.append(
+                    ChatMessage(
+                        role="assistant",
+                        name=f"debator_{debator_id}",
+                        content=content.strip()
+                    )
+                )
+
+        return formatted_messages
+
 
 #TODO: This class is written around the assumption that we're just using the openai llm, but it really should work for any LLM type
 class DebateCoordinator:
@@ -135,10 +154,9 @@ class DebateCoordinator:
 
     def _build_debators(self, num_debators: int, scratchpad:str, llm= None) -> List[DebateLLM]:
         debators: List[DebateLLM] = []
-        #TODO: question scratchpad can either be added here or in inital repsonse 
         for indx in range(num_debators):
             llm = AnyOpenAILLM(
-                temperature=.30*(1+indx),
+                temperature=.30*(indx),
                 max_tokens=256,
                 model_name="gpt-3.5-turbo",
                 model_kwargs={"stop": "\n"},
