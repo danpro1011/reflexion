@@ -5,7 +5,7 @@ python main.py \
   --dataset_path ./benchmarks/humaneval-py.jsonl \
   --strategy "simple" \
   --language "py" \
-  --model "meta-llama/Llama-3.2-3B-Instruct" \
+  --model "gpt-4" \
   --pass_at_k "1" \
   --max_iters "1" \
   --verbose
