@@ -118,38 +118,7 @@ class DebateLLM:
             output = translate_text(output, source_language=self.language, target_language="en")
 
         return output
-        if self.language != "en":
-            # Parts of the prompt that need to be translated
-            question_context = f"Previous Trial:\nQuestion{self.question}{self.scratchpad}\nThese are the reflections that other agents analyzing your reasoning traces came up with:"
-            response_question = "Using the opinion of other agents as additional advice, can you give an updated response ..." 
-            debate_history = self._format_debate_history(debate_history, as_pormpt=False)
-            
-            # Use translation library to translate the parts
-            question_context = translate_text(question_context, source_language = "en", target_language = self.language)
-            debate_history = [translate_text(x, source_language = "en", target_language = self.language) for x in debate_history]
-            response_question = translate_text(response_question, source_language = "en", target_language = self.language)
-
-            # Format them in langchain 
-            question_context = HumanMessage(content = question_context)
-            response_question = HumanMessage(content = response_question)
-            #TODO: This is obviously not how it should be done, temporary for just initial testing
-            debate_history = [HumanMessage(content = x) for x in debate_history]
-
-            
-            response = self.llm.query([self.system_prompt, question_context, *debate_history, response_question])
-            response = translate_text(response, source_language = self.language, target_language = "en")
-            
-        else:
-            question_context = f"Previous Trial:\nQuestion{self.question}{self.scratchpad}\nThese are the reflections that other agents analyzing your reasoning traces came up with:"
-            question_context = HumanMessage(content = question_context)
-
-            debate_history = self._format_debate_history(debate_history)
-
-            response_question = HumanMessage(content = "Using the opinion of other agents as additional advice, can you give an updated response ...")
-            #Order is system_prompt + question/scratchpad context + debate_history + finally the question
-            response = self.llm.query([self.system_prompt, question_context, *debate_history, response_question])
-
-        return response
+    
     
     def _format_debate_history(self, debate_history) -> List:
         """
