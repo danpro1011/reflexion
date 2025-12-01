@@ -1,0 +1,7 @@
+{
+  "strategy": "NONE",
+  "num_trials": 1,
+  "dataset_path": "/home/am/P/eecs498/reflexion/hotpotqa_runs/data/hotpot-qa-distractor-sample.joblib",
+  "num_questions": 100,
+  "num_correct": 62
+}
