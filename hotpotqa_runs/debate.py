@@ -4,9 +4,11 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, TypedDict
 import pprint as pp
+import xml.etree.ElementTree as ET
+
 
 from llm import AnyOpenAILLM
-from prompts import debate_meta_reflection_prompt, debator_response_prompt, debator_initial_prompt, consensus_reached_prompt, determine_consensus_prompt
+from prompts import debate_meta_reflection_prompt, debator_response_prompt, debator_initial_prompt, consensus_reached_prompt, determine_consensus_prompt, verbalised_sampling_system_prompt
 from fewshots import REFLECTIONS
 from environment import normalize_answer, EM
 
@@ -128,6 +130,7 @@ class DebateLLM:
         debate_id: int,
         llm: Optional[AnyOpenAILLM] = None,
         system_prompt: PromptTemplate =  debate_meta_reflection_prompt,
+        initial_position: str = ""
     ) -> None:
         self.question = question
         self.scratchpad = scratchpad
@@ -141,7 +144,12 @@ class DebateLLM:
         # System prompt stays constant across debate rounds
         self.system_prompt = SystemMessage(content=system_prompt.format(examples=REFLECTIONS))
 
+        self.initial_position = initial_position
+
     def initial_response(self) -> str:
+        if self.initial_position != "":
+            return self.initial_position
+
         prompt = debator_initial_prompt.format(question=self.question, scratchpad = self.scratchpad)
         initial_message = HumanMessage(content = prompt)
         
@@ -225,10 +233,21 @@ class DebateCoordinator:
 
     def _build_debators(self, num_debators: int, scratchpad:str, llm= None) -> List[DebateLLM]:
         debators: List[DebateLLM] = []
+        #The way this works is that we're gonna generate the ideas from VS, then those ideas are gonna be the 'diversity' in each seperate debator
+        system_prompt = SystemMessage(content = verbalised_sampling_system_prompt.format())
+        prompt = debate_meta_reflection_prompt.format(examples=REFLECTIONS)
+
+        initial_message = HumanMessage(content=prompt)
+        prompt = debator_initial_prompt.format(question= self.question, scratchpad = scratchpad)
+        question = HumanMessage(content = prompt)
+
+        reflections = self.llm.query([system_prompt, initial_message, question])
+        reflections = extract_text_tags_xml(reflections)
+
         for indx in range(num_debators):
             # Use varying temperatures to encourage diverse perspectives
             llm = AnyOpenAILLM(
-                temperature=.33*(indx),
+                temperature=0,
                 max_tokens=256,
                 model_name="gpt-3.5-turbo",
             )
@@ -237,7 +256,8 @@ class DebateCoordinator:
                     question=self.question,
                     scratchpad=scratchpad,
                     llm=llm,
-                    debate_id=indx
+                    debate_id=indx,
+                    initial_position=reflections[indx]
                 )
             )
         return debators
