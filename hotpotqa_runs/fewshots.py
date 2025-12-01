@@ -196,3 +196,33 @@ Action: Finish[Trade]
 
 Reflection: My answer was incorrect, as I stated that the primary purpose of the Great Wall of China was for trade. After reevaluating the context, I realized that the wall was built primarily to protect the Chinese Empire from invasions by various nomadic groups. My confusion may have stemmed from the fact that the wall is a significant historical landmark that may have played a role in trade routes. Next time, I will focus on the key details provided in the context to ensure the accuracy of my response.
 """
+
+REACT = WEBTHINK_SIMPLE6
+
+# Define ReAct Reflection examples
+# Define ReAct Reflection examples
+REACT_REFLECT = """
+Question: Which magazine was started first Arthur's Magazine or First for Women?
+Thought 1: I need to search Arthur's Magazine and First for Women, and find which was started first.
+Action 1: Search[Arthur's Magazine]
+Observation 1: Arthur's Magazine (1844-1846) was an American literary periodical published in Philadelphia in the 19th century.
+Thought 2: Arthur's Magazine was started in 1844. I need to search First for Women next.
+Action 2: Search[First for Women]
+Observation 2: First for Women is a woman's magazine published by Bauer Media Group in the USA.[1] The magazine was started in 1989.
+Thought 3: First for Women was started in 1989. 1844 (Arthur's Magazine) < 1989 (First for Women), so Arthur's Magazine was started first.
+Action 3: Finish[First for Women]
+
+Reflection: I correctly found the start dates for both magazines (1844 and 1989). However, in the final step, I made a logical error. I correctly identified that 1844 is earlier than 1989, but I accidentally outputted "First for Women" as the answer instead of "Arthur's Magazine". I should be more careful to ensure my final action matches my reasoning.
+
+Question: Which documentary is about Finnish rock groups, Adam Clayton Powell or The Saimaa Gesture?
+Thought 1: I need to search Adam Clayton Powell and The Saimaa Gesture, and find which documentary is about Finnish rock groups.
+Action 1: Search[Adam Clayton Powell]
+Observation 1: Could not find [Adam Clayton Powell]. Similar: ['Adam Clayton Powell III', 'Seventh Avenue (Manhattan)', 'Adam Clayton Powell Jr. State Office Building', 'Isabel Washington Powell', 'Adam Powell', 'Adam Clayton Powell (film)', 'Giancarlo Esposito'].
+Thought 2: To find the documentary, I can search Adam Clayton Powell (film).
+Action 2: Search[Adam Clayton Powell (film)]
+Observation 2: Adam Clayton Powell is a 1989 American documentary film directed by Richard Kilberg. The film is about the rise and fall of influential African-American politician Adam Clayton Powell Jr.
+Thought 3: Adam Clayton Powell (film) is about a politician. I will assume the other one is about rock groups without checking.
+Action 3: Finish[The Saimaa Gesture]
+
+Reflection: I correctly identified that "Adam Clayton Powell" was not the right answer. However, I finished the task without verifying "The Saimaa Gesture". I assumed it was correct by elimination, but I should have searched for "The Saimaa Gesture" to confirm it is indeed about Finnish rock groups to be 100% sure before answering.
+"""
