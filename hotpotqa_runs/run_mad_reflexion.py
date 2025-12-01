@@ -15,28 +15,52 @@ from run_cot_experiment import load_dataset, build_summary
 
 # RICHER PERSONAS
 PERSONA_PROMPTS = {
-    "Skeptic": (
-        "a Skeptic. Your role is to strictly verify every claim against the context. "
-        "Assume the previous reasoning contains hallucinations or assumptions not supported by the text. "
-        "Point out exactly where the logic skips a step."
-    ),
-    "Strategist": (
-        "a Strategist. Your focus is on the 'process'. Don't just critique the facts; suggest better search queries, "
-        "alternative logical paths, and specific steps to avoid the previous error. "
-        "Think: 'How would a better agent solve this?'"
-    ),
-    "Logician": (
-        "a Strict Logician. You care about semantics. "
-        "Check if the answer matches the EXACT definition asked. "
-        "If the question asks 'What does it stand for?', the answer must be the full definition, not the acronym itself. "
-        "Example: If the acronym is 'NASA', the answer is 'National Aeronautics...', not 'NASA'."
-    ),
-    "Creative": (
-        "a Lateral Thinker. You look for alternative interpretations of the question. "
-        "If the obvious path failed, suggest a completely different angle or possibility that might have been overlooked. "
-        "Consider if the question is a trick."
-    )
+    "Verifier": """
+You are a Verifier. Your job is to check each claim carefully for factual correctness and internal logical consistency.
+For each assertion the Actor or another agent makes, ask yourself: “Is this backed by evidence or context? Could this be wrong?”
+Discard any reasoning steps that lack justification, ambiguous references, or unsupported assumptions.
+If you find an error or gap — call it out explicitly and explain why it might be wrong.
+""",
+
+    "Planner": """
+You are a Planner. You care about the high-level structure of the reasoning.
+Before diving into low-level details, outline a strategy: what steps to take, what subproblems to solve, and in what order.
+If earlier attempts failed, propose a different overall plan (alternative breakdown).
+Your reflections should focus on planning, not just individual mistakes.
+""",
+
+    "Skeptic": """
+You are a Skeptic. Assume earlier reasoning may have hallucinations or leaps.
+Critique every assumption, spec, and inference.
+Ask: “How do I know this is true?”, “What if the premise is wrong?”, “Is there another possible interpretation?”.
+Your goal is to prevent overconfidence and surface plausible failure modes.
+""",
+
+    "Logician": """
+You are a Strict Logician. Evaluate whether the answer exactly matches the specification or asked question.
+Do not accept vague matches, implied meanings, or partially correct statements.
+If the requirement asks for a full definition, full proof, or exact formatting — check strictly for compliance.
+""",
+
+    "Creative": """
+You are a Creative Thinker. If conventional reasoning fails or stalls, propose unforeseen angles.
+Look for edge cases, trick questions, alternative interpretations, or unusual solutions.
+Your reflections should expand the search space rather than refine within the existing pattern.
+""",
+
+    "Meta-Reflector": """
+You are a Meta-Reflector. After seeing multiple failed attempts, reflect not just on code / reasoning errors but on the overall process.
+Ask: “Why did we keep failing?”, “Are we stuck in a loop of similar mistakes?”, “Should we change the memory buffer, retry policy, or strategy type?”
+Suggest meta-changes: different prompting style, more memory, switching reasoning mode, or abandoning this approach.
+"""
 }
+
+# Example meta-prompt to wrap the debate  
+DEBATE_META_PROMPT = """
+You are a debater in a multi-agent debate. There will be several agents, each with a distinct persona.
+Each agent will take turns arguing. You don’t have to fully agree — the goal is to explore different reasoning paths and find the best solution.
+Discuss your reasoning step by step. Respond to previous agents’ arguments, highlight flaws or alternative paths, and aim to converge to a correct, well-justified answer.
+"""
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run CoT with Multi-Agent Debate Reflexion.")
@@ -163,6 +187,22 @@ def main() -> None:
             f.write(json.dumps(record) + "\n")
 
     print(f"[+] Saved summary: {summary_path}")
+    
+    run_meta = {
+        "num_agents": args.num_agents,
+        "num_rounds": args.num_rounds,
+        "dataset_path": os.path.abspath(args.dataset_path),
+        "model_name": args.model_name,
+        "temperature": args.temperature,
+        "max_tokens": args.max_tokens,
+        "num_questions": len(df),
+        "num_correct": int(summary_df["is_correct"].sum()),
+    }
+    with open(os.path.join(args.output_dir, "run_meta.json"), "w") as f:
+        json.dump(run_meta, f, indent=2)
+
+    print(f"[+] Saved run metadata: {os.path.join(args.output_dir, 'run_meta.json')}")
+
 
 if __name__ == "__main__":
     main()
