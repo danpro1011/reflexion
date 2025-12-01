@@ -5,82 +5,36 @@ import json
 import multiprocessing
 from io import StringIO
 from typing import List
-
-# Add parent dir to path to allow importing from sibling directories
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from debate_coordinator_programming import DebateCoordinator
-from utils import enumerate_resume, make_printv, write_jsonl
+from utils import enumerate_resume, write_jsonl
 from generators import generator_factory, model_factory
+from datetime import datetime, timezone
 
 # --- CODING PERSONAS ---
 CODING_PERSONAS = {
-    "Senior Engineer": """
-You are a Senior Software Engineer. Your goal is to write clean, efficient, and correct code.
-Review the failed code and the error message.
-Identify logic errors, off-by-one errors, or incorrect assumptions about the API/Input.
-Propose a concrete fix in code or pseudocode.
-""",
-    "QA Engineer": """
-You are a QA Test Engineer. You focus on edge cases and input validation.
-Look at the test failure. Why did it fail? Was it an empty input? A large number? A type mismatch?
-Critique the current implementation's handling of boundary conditions.
-""",
-    "Algorithm Expert": """
-You are an Algorithm Specialist. Focus on the complexity and the underlying algorithm.
-Is the current approach too slow (Time Limit Exceeded)? Is the logic fundamentally flawed for the problem type?
-Suggest a better algorithm or data structure if necessary.
-""",
-    "Code Reviewer": """
-You are a Strict Code Reviewer. Check for syntax errors, variable naming confusion, and Pythonic practices.
-Ensure the code actually matches the function signature provided.
-"""
+    "Senior Engineer": "You are a Senior Software Engineer. Your goal is to write clean, efficient, and correct code.",
+    "QA Engineer": "You are a QA Test Engineer. You focus on edge cases and input validation.",
+    "Algorithm Expert": "You are an Algorithm Specialist. Focus on the complexity and the underlying algorithm.",
+    "Code Reviewer": "You are a Strict Code Reviewer. Check for syntax errors and Pythonic practices."
 }
 
-def run_humaneval_test(code: str, test_code: str, timeout: int = 5) -> dict:
-    """
-    Runs the generated code + the HumanEval test harness.
-    Returns {'passed': bool, 'result': str}
-    """
-    # HumanEval tests usually look like:
-    # def check(candidate): ...
-    # check(solution)
-    # So we just need to concatenate them.
-    
+def run_humaneval_test(code: str, test_code: str) -> dict:
     full_program = f"from typing import *\nimport math\n\n{code}\n\n{test_code}"
+
+    capture = StringIO()
+    sys.stdout = capture
+    sys.stderr = capture
     
-    def target(queue):
-        # Capture stdout/stderr
-        capture = StringIO()
-        sys.stdout = capture
-        sys.stderr = capture
-        
-        try:
-            # Create a fresh global scope
-            exec_globals = {}
-            exec(full_program, exec_globals)
-            queue.put({"passed": True, "result": "Tests Passed"})
-        except Exception:
-            import traceback
-            # Return the traceback as feedback
-            queue.put({"passed": False, "result": traceback.format_exc()})
-        finally:
-            sys.stdout = sys.__stdout__
-            sys.stderr = sys.__stderr__
-
-    queue = multiprocessing.Queue()
-    p = multiprocessing.Process(target=target, args=(queue,))
-    p.start()
-    p.join(timeout)
-
-    if p.is_alive():
-        p.terminate()
-        p.join()
-        return {"passed": False, "result": f"TimeoutError: Execution exceeded {timeout}s"}
-
-    if not queue.empty():
-        return queue.get()
-    return {"passed": False, "result": "Process crashed silently"}
+    try:
+        exec_globals = {}
+        exec(full_program, exec_globals)
+        return {"passed": True, "result": "Tests Passed"}
+    except Exception:
+        import traceback
+        return {"passed": False, "result": traceback.format_exc()}
+    finally:
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -92,11 +46,11 @@ def parse_args():
     parser.add_argument("--num_agents", type=int, default=2)
     parser.add_argument("--num_rounds", type=int, default=2)
     parser.add_argument("--personas", nargs="+", default=["Senior Engineer", "QA Engineer"])
-    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--max_examples", type=int, default=None,
+                        help="Stop after this many examples (for quick runs). Default: run all")
     return parser.parse_args()
 
 def run_mad_programming_trials(args):
-    # Load Dataset
     dataset = []
     if not os.path.exists(args.dataset_path):
         print(f"Error: Dataset not found at {args.dataset_path}")
@@ -106,94 +60,162 @@ def run_mad_programming_trials(args):
         for line in f:
             dataset.append(json.loads(line))
 
-    # Prepare Personas
-    base_personas = args.personas
-    agent_personas = []
-    for i in range(args.num_agents):
-        key = base_personas[i % len(base_personas)]
-        desc = CODING_PERSONAS.get(key, key)
-        agent_personas.append(desc)
+    # ensure output directory exists
+    out_dir = os.path.dirname(os.path.abspath(args.output_path)) or '.'
+    os.makedirs(out_dir, exist_ok=True)
 
-    # Initialize Factories
+    # debate log path (JSONL)
+    debate_jsonl_path = os.path.join(out_dir, "debate_outputs.jsonl")
+    debate_txt_path = os.path.join(out_dir, "debate_outputs.txt")
+    attempts_txt_path = os.path.join(out_dir, "attempts_summary.txt")
+    # create files if missing
+    for p in (debate_jsonl_path, debate_txt_path, attempts_txt_path):
+        if not os.path.exists(p):
+            with open(p, "w", encoding="utf-8") as _:
+                pass
+    
+    agent_personas = [CODING_PERSONAS[key] for key in args.personas]
+
     gen = generator_factory(args.language)
     model = model_factory(args.model)
 
-    print(f"[*] Starting MAD Programming Run with {len(dataset)} tasks.")
-    print(f"[*] Personas: {args.personas}")
-
+    processed = 0
     for i, item in enumerate_resume(dataset, args.output_path):
-        task_id = item['task_id']
-        print(f"\n--- Task {task_id} ---")
-        
-        # 1. First Attempt (Simple Strategy)
-        code = gen.func_impl(item["prompt"], model, "simple")
-        
-        is_passing = False
-        feedback = ""
-        trial = 0
-        
-        # Execution Loop
-        for trial in range(1, args.num_trials + 1):
-            # Execute Code
-            tests = item.get("test", "") or item.get("example_test", "")
-            
-            execution_result = run_humaneval_test(code, tests)
-            is_passing = execution_result['passed']
-            feedback = execution_result['result'] # Traceback or error message
+        if args.max_examples is not None and processed >= args.max_examples:
+            print(f"[+] Reached max_examples={args.max_examples}. Stopping.")
+            break
+        processed += 1
 
-            print(f"Trial {trial}: {'PASS' if is_passing else 'FAIL'}")
-            
-            if is_passing:
+        print(f"\n--- Task {item.get('name') or item.get('entry_point') or i} ---")
+        code = gen.func_impl(item["prompt"], model, "simple")
+        # sanitize generator output: ensure we have a non-empty string to exec
+        if not isinstance(code, str) or not code.strip():
+            entry = item.get("entry_point") or item.get("name") or "solution"
+            print(f"WARNING: generator returned empty code for task '{entry}'. Inserting stub.")
+            code = f"def {entry}(*args, **kwargs):\n    pass\n"
+        
+        for trial in range(1, args.num_trials + 1):
+            tests = item.get("test", "") or item.get("example_test", "")
+            execution_result = run_humaneval_test(code, tests)
+
+            if execution_result['passed']:
+                print(f"Trial {trial}: PASS")
                 break
             
-            if trial < args.num_trials:
-                print(f"  [!] Tests failed. Starting Debate...")
-                
-                # Context for the debate: The Code + The Error
-                context = f"### Code:\n{code}\n\n### Execution Output/Error:\n{feedback}"
-                
-                coordinator = DebateCoordinator(
-                    question=f"Fix the python function `{item['entry_point']}` to pass the tests.",
-                    context=context,
-                    answer_key="Passing Unit Tests", # Abstract key
-                    num_agents=args.num_agents,
-                    num_rounds=args.num_rounds,
-                    llm_kwargs={"model_name": args.model, "temperature": 0.2},
-                    personas=agent_personas
-                )
+            print(f"Trial {trial}: FAIL")
+            context = f"### Code:\n{code}\n\n### Execution Output/Error:\n{execution_result['result']}"
+            coordinator = DebateCoordinator(
+                question=f"Fix the python function `{item.get('entry_point')}` to pass the tests.",
+                context=context,
+                answer_key="Passing Unit Tests",
+                num_agents=args.num_agents,
+                num_rounds=args.num_rounds,
+                llm_kwargs={"model_name": args.model, "temperature": 0.2},
+                personas=agent_personas
+            )
 
-                debate_result = coordinator.run()
-                
-                # Extract consensus
-                if isinstance(debate_result, dict):
-                    consensus = debate_result.get("final_answer") or debate_result.get("consensus") or str(debate_result)
-                else:
-                    consensus = str(debate_result)
+            debate_result = coordinator.run()
+            # consensus string and raw serializable debate object
+            consensus = None
+            try:
+                consensus = debate_result.get("final_answer") or debate_result.get("consensus") or None
+            except Exception:
+                # debate_result may be a string or other type
+                pass
+            if consensus is None:
+                # fallback to string
+                consensus = str(debate_result)
 
-                print(f"  [+] Debate Consensus: {consensus[:100]}...")
+            print(f"  [+] Debate Consensus: {consensus[:100]}...")
 
-                # 2. Next Attempt (Reflexion Strategy using Debate Consensus)
-                # We pass the consensus as 'self_reflection'
-                code = gen.func_impl(
-                    func_sig=item["prompt"],
-                    model=model,
-                    strategy="reflexion",
-                    prev_func_impl=code,
-                    feedback=feedback,
-                    self_reflection=consensus
-                )
+            # log debate output (JSONL)
+            debate_entry = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "task_name": item.get("name"),
+                "task_entry": item.get("entry_point"),
+                "trial": trial,
+                "personas": args.personas,
+                "scratchpad": context,
+                "consensus": consensus,
+                "raw_debate": debate_result if isinstance(debate_result, (dict, list, str, int, float, bool, type(None))) else str(debate_result)
+            }
+            try:
+                with open(debate_jsonl_path, "a", encoding="utf-8") as df:
+                    df.write(json.dumps(debate_entry, ensure_ascii=False) + "\n")
+            except Exception as e:
+                print(f"WARNING: failed to write debate log: {e}")
 
-        # Log Result
+            # also append a human-readable text log (neat formatting)
+            try:
+                with open(debate_txt_path, "a", encoding="utf-8") as tf:
+                    ts = debate_entry["timestamp"]
+                    tf.write("\n" + "="*100 + "\n")
+                    tf.write(f"Timestamp: {ts}\n")
+                    tf.write(f"Task: {debate_entry['task_name'] or debate_entry['task_entry']}\n")
+                    tf.write(f"Trial: {debate_entry['trial']}\n")
+                    tf.write(f"Personas: {', '.join(debate_entry['personas'])}\n")
+                    tf.write("-"*100 + "\n")
+                    tf.write("Scratchpad / Context:\n")
+                    tf.write(debate_entry["scratchpad"] + "\n")
+                    tf.write("-"*100 + "\n")
+                    tf.write("Debate Consensus:\n")
+                    tf.write(debate_entry["consensus"] + "\n")
+                    tf.write("-"*100 + "\n")
+                    tf.write("Raw Debate Output:\n")
+                    # try pretty-print if JSON-serializable
+                    try:
+                        tf.write(json.dumps(debate_entry["raw_debate"], indent=2, ensure_ascii=False) + "\n")
+                    except Exception:
+                        tf.write(str(debate_entry["raw_debate"]) + "\n")
+                    tf.write("="*100 + "\n\n")
+            except Exception as e:
+                print(f"WARNING: failed to write human-readable debate log: {e}")
+
+            # ensure consensus and feedback are strings (not None) before calling generator
+            prev_impl = code or ""
+            feedback_text = execution_result.get('result') if isinstance(execution_result, dict) else str(execution_result)
+            feedback_text = (feedback_text or "")
+            self_reflection_text = (consensus or "")
+
+            code = gen.func_impl(
+                func_sig=item["prompt"],
+                model=model,
+                strategy="reflexion",
+                prev_func_impl=prev_impl,
+                feedback=feedback_text,
+                self_reflection=self_reflection_text
+            )
+
+        # build enriched attempt record
         cur_result = {
-            "task_id": task_id,
+            "task_name": item.get("name"),
+            "task_entry": item.get("entry_point"),
+            "prompt": item.get("prompt"),
             "completion": code,
-            "passed": is_passing,
+            "passed": execution_result['passed'],
             "trials_used": trial,
-            "log": consensus if 'consensus' in locals() else ""
+            "execution_result": execution_result.get("result") if isinstance(execution_result, dict) else str(execution_result),
+            "debate_consensus": consensus if 'consensus' in locals() else None,
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
-        # Save progress
         write_jsonl(args.output_path, [cur_result], append=True)
+
+        # append a concise human-readable attempt summary
+        try:
+            with open(attempts_txt_path, "a", encoding="utf-8") as af:
+                af.write("\n" + "-"*80 + "\n")
+                af.write(f"Timestamp: {cur_result['timestamp']}\n")
+                af.write(f"Task: {cur_result['task_name'] or cur_result['task_entry']}\n")
+                af.write(f"Passed: {cur_result['passed']}  |  Trials used: {cur_result['trials_used']}\n")
+                af.write(f"Execution Result (truncated):\n")
+                ex = cur_result['execution_result'] or ""
+                af.write((ex[:800] + "...") if len(ex) > 800 else ex)
+                af.write("\n")
+                af.write(f"Debate Consensus (truncated):\n{(cur_result.get('debate_consensus') or '')[:800]}\n")
+                af.write("-"*80 + "\n\n")
+        except Exception as e:
+            print(f"WARNING: failed to write attempts summary txt: {e}")
 
 if __name__ == "__main__":
     args = parse_args()

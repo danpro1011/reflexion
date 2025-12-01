@@ -40,29 +40,27 @@ def extract_code(completion: str) -> str:
     return completion.strip()
 
 class DebateLLM:
-    def __init__(
-        self,
-        question: str,
-        scratchpad: str,
-        debate_id: int,
-        persona: str = "Senior Engineer",
-        llm: Optional[AnyOpenAILLM] = None,
-        system_prompt: PromptTemplate = debate_meta_reflection_prompt
-    ) -> None:
-        self.question = question
-        self.scratchpad = scratchpad # In programming, this is Code + Error Traceback
+    def __init__(self, llm=None, persona: str = "", system_prompt: str = "", debate_id: int = 0, question: str = "", scratchpad: str = "", **kwargs):
+        # store basic fields passed by the coordinator
         self.llm = llm or AnyOpenAILLM(
             temperature=0.2,
-            max_tokens=512, # Increased for code generation
-            model_name="gpt-3.5-turbo",
-            model_kwargs={"stop": "\n"} # Be careful with stop tokens in code
+            max_tokens=512,
+            model_name="gpt-3.5-turbo"
         )
-        # Remove stop token for code generation if it interferes
-        if self.llm.model_kwargs.get("stop") == "\n":
-             del self.llm.model_kwargs["stop"]
-
-        self.debate_id = debate_id
         self.persona = persona
+        self.system_prompt = system_prompt
+        self.debate_id = debate_id
+        self.question = question
+        self.scratchpad = scratchpad
+
+        # get model kwargs if present, otherwise use empty dict
+        model_kwargs = getattr(self.llm, "model_kwargs", {}) or {}
+
+        # maintain previous logic but use the safe model_kwargs variable
+        if model_kwargs.get("stop") == "\n":
+            self.stop = "\n"
+        else:
+            self.stop = model_kwargs.get("stop", None)
 
         # --- CUSTOM SYSTEM PROMPT FOR PROGRAMMING ---
         # We override the generic prompt to ensure they focus on CODE, not QA.
