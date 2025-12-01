@@ -154,7 +154,7 @@ def run_mad_reflexion_trials(
                 )
 
                 # Call run with expected signature; accept either string or dict return
-                debate_result = coordinator.run(num_debators=args.num_agents, scratchpad=agent.scratchpad)
+                debate_result = coordinator.run()
                 if isinstance(debate_result, dict):
                     generated_reflection = debate_result.get("final_answer") or debate_result.get("consensus") or json.dumps(debate_result)
                     debate_text = json.dumps(debate_result, indent=2)
