@@ -1,0 +1,14 @@
+{
+  "total_questions": 100,
+  "total_trials": 5,
+  "total_correct": 40,
+  "accuracy": 40.0,
+  "total_debates": 257,
+  "correct_per_trial": {
+    "1": 30,
+    "2": 5,
+    "3": 3,
+    "4": 2,
+    "5": 0
+  }
+}
