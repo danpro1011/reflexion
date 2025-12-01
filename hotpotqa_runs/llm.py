@@ -1,4 +1,4 @@
-from typing import Union, Literal, Optional
+from typing import Union, Literal, Optional, Any
 try:
     from langchain_openai import ChatOpenAI, OpenAI
 except ImportError:
@@ -23,119 +23,75 @@ class AnyOpenAILLM:
             self.model = ChatOpenAI(*args, **kwargs)
             self.model_type = 'chat'
 
+    def _extract_text_from_result(self, result: Any) -> str:
+        # common result shapes from different langchain versions
+        if result is None:
+            return ""
+        if isinstance(result, str):
+            return result
+        # Chat message objects
+        if hasattr(result, "content"):
+            return getattr(result, "content")
+        # LLMResult / ChatResult with .generations or .generations[0][0].text
+        if hasattr(result, "generations"):
+            gens = result.generations
+            try:
+                first = gens[0]
+                # sometimes it's a list
+                if isinstance(first, list) and len(first) > 0:
+                    g = first[0]
+                else:
+                    g = first
+                if hasattr(g, "text"):
+                    return g.text
+                if hasattr(g, "generation_text"):
+                    return g.generation_text
+            except Exception:
+                pass
+        # fallback to .text or __str__
+        if hasattr(result, "text"):
+            return getattr(result, "text")
+        return str(result)
+
+    def _call_underlying(self, prompt_obj: Any) -> str:
+        m = self.model
+        # 1) prefer existing 'invoke' if present
+        if hasattr(m, "invoke"):
+            try:
+                return self._extract_text_from_result(m.invoke(prompt_obj))
+            except Exception:
+                pass
+        # 2) try direct __call__
+        if callable(m):
+            try:
+                out = m(prompt_obj)
+                return self._extract_text_from_result(out)
+            except Exception:
+                pass
+        # 3) try 'generate' (langchain chat generate)
+        if hasattr(m, "generate"):
+            try:
+                out = m.generate(prompt_obj)
+                return self._extract_text_from_result(out)
+            except Exception:
+                pass
+        # 4) last resort: stringify
+        raise RuntimeError("Underlying model has no known callable API (invoke/__call__/generate)")
+
     def __call__(self, prompt: str):
         if self.model_type == 'completion':
-            return self.model.invoke(prompt)
+            # completion models typically accept a raw prompt
+            return self._call_underlying(prompt)
         else:
-            return self.model.invoke(
-                [
-                    HumanMessage(
-                        content=prompt,
-                    )
-                ]
-            ).content
+            # chat models usually expect message objects
+            messages = [HumanMessage(content=prompt)]
+            return self._call_underlying(messages)
 
     def query(self, query):
         if self.model_type == 'completion':
-            return self.model.invoke(query)
+            return self._call_underlying(query)
         else:
-            return self.model.invoke(query).content
-
-class LocalLLM:
-    """Local HuggingFace model wrapper"""
-    def __init__(self,
-                 model_name: str = "meta-llama/Meta-Llama-3-8B-Instruct",
-                 temperature: float = 0.0,
-                 max_tokens: int = 100,
-                 device: str = "auto",
-                 load_in_8bit: bool = False,
-                 model_kwargs: Optional[dict] = None,
-                 **kwargs):
-        """
-        Initialize a local HuggingFace model.
-        Args:
-            model_name: HuggingFace model ID (default: Llama-3-8B-Instruct)
-            temperature: Sampling temperature
-            max_tokens: Maximum tokens to generate
-            device: Device to use ("auto", "cuda", "cpu")
-            load_in_8bit: Use 8-bit quantization to reduce memory usage
-            model_kwargs: Additional model kwargs (e.g., {"stop": "\n"})
-        """
-        import torch
-        from transformers import AutoModelForCausalLM, AutoTokenizer
-
-        self.model_name = model_name
-        self.temperature = max(temperature, 0.0001)
-        self.max_tokens = max_tokens
-        self.stop_sequences = model_kwargs.get("stop", []) if model_kwargs else []
-        if isinstance(self.stop_sequences, str):
-            self.stop_sequences = [self.stop_sequences]
-
-        print(f"Loading local model: {model_name}...")
-
-        model_kwargs = {
-            "device_map": device,
-            "torch_dtype": torch.bfloat16,
-        }
-
-        if load_in_8bit:
-            model_kwargs["load_in_8bit"] = True
-            print("Loading model in 8-bit mode to save memory...")
-
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            model_name,
-            padding_side='left'
-        )
-
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            **model_kwargs
-        )
-
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-
-        print(f"Model loaded successfully on {device}!")
-
-    def __call__(self, prompt: str, stop: Optional[list] = None) -> str:
-        """Generate text from prompt"""
-        import torch
-
-        effective_stop = stop if stop is not None else self.stop_sequences
-
-        # Tokenize
-        inputs = self.tokenizer(prompt, return_tensors="pt", padding=True)
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-
-        gen_kwargs = {
-            "max_new_tokens": self.max_tokens,
-            "pad_token_id": self.tokenizer.pad_token_id,
-        }
-
-        if self.temperature > 0.0001:
-            gen_kwargs["do_sample"] = True
-            gen_kwargs["temperature"] = self.temperature
-            gen_kwargs["top_p"] = 0.95
-
-        with torch.no_grad():
-            outputs = self.model.generate(
-                **inputs,
-                **gen_kwargs
-            )
-
-        full_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        # Remove the prompt from output
-        if full_text.startswith(prompt):
-            generated_text = full_text[len(prompt):].strip()
-        else:
-            generated_text = full_text.strip()
-
-        if effective_stop:
-            for stop_seq in effective_stop:
-                if stop_seq in generated_text:
-                    generated_text = generated_text[:generated_text.index(stop_seq)]
-                    break
-
-        generated_text = generated_text.strip()
-
-        return generated_text
+            # if caller passes a raw prompt, wrap as message; if they pass messages, forward
+            if isinstance(query, (list, tuple)):
+                return self._call_underlying(query)
+            return self._call_underlying([HumanMessage(content=query)])

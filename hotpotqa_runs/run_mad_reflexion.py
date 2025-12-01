@@ -3,6 +3,7 @@ import json
 import os
 from typing import Any, Dict, List
 import pandas as pd
+from datetime import datetime, timezone
 
 # Import the Agent that attempts to solve the problem
 from agents import CoTAgent, ReflexionStrategy
@@ -117,6 +118,7 @@ def run_mad_reflexion_trials(
             if not agent.is_correct() and trial < args.num_trials:
                 print(f"  [!] Failed. Starting Debate Reflexion...")
                 
+                # construct coordinator with the core required args (aligns with debate.py)
                 coordinator = DebateCoordinator(
                     question=agent.question,
                     context=agent.scratchpad, # Pass the FAILED scratchpad as context
@@ -127,12 +129,38 @@ def run_mad_reflexion_trials(
                     personas=agent_personas
                 )
 
-                # The debate output becomes the reflection
-                debate_result = coordinator.run()
-                generated_reflection = debate_result["final_answer"]
-                
+                # Call run with expected signature; accept either string or dict return
+                debate_result = coordinator.run(num_debators=args.num_agents, scratchpad=agent.scratchpad)
+                if isinstance(debate_result, dict):
+                    generated_reflection = debate_result.get("final_answer") or debate_result.get("consensus") or json.dumps(debate_result)
+                    debate_text = json.dumps(debate_result, indent=2)
+                else:
+                    generated_reflection = str(debate_result)
+                    debate_text = generated_reflection
+
+                # Append the debate output as a new reflection for the agent
                 agent.reflections.append(generated_reflection)
                 print(f"  [+] Debate finished. Reflection added.")
+
+                # Write a neat, timestamped debate log entry to output_dir/debate_outputs.txt
+                os.makedirs(args.output_dir, exist_ok=True)
+                debate_log_path = os.path.join(args.output_dir, "debate_outputs.txt")
+                ts = datetime.now(timezone.utc).isoformat()
+                personas_str = ", ".join(agent_personas)
+                with open(debate_log_path, "a", encoding="utf-8") as df:
+                    df.write("\n" + "="*80 + "\n")
+                    df.write(f"Timestamp: {ts}\n")
+                    df.write(f"Trial: {trial} | Agent index: {idx} | Question ID: {metadata[idx]['id']}\n")
+                    df.write(f"Personas: {personas_str}\n")
+                    df.write(f"Question: {metadata[idx]['question']}\n")
+                    df.write(f"Ground truth: {metadata[idx]['answer']}\n")
+                    df.write("-"*80 + "\n")
+                    df.write("Scratchpad (failed attempt):\n")
+                    df.write(agent.scratchpad + "\n")
+                    df.write("-"*80 + "\n")
+                    df.write("Debate output / consensus:\n")
+                    df.write(debate_text + "\n")
+                    df.write("="*80 + "\n\n")
 
     return {
         "attempt_logs": attempt_logs,
