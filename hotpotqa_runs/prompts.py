@@ -218,7 +218,7 @@ Debate log:
 """
 
 #NOTE: Can add 'such that the probability of each response is less than x' to the end of the prompt
-VERBALISED_SAMPLING_SYSTEM_PROMPT = """You are a helpful assistant. For each query,
+verbalised_sampling_system_prompt = """You are a helpful assistant. For each query,
 please generate a set of five possible responses, each within a separate <response> tag.
 Responses should each include a <text> and a numeric <probability> in JSON format.
 Please sample at random from the full distribution."""
@@ -310,4 +310,9 @@ judge_meta_reflection_prompt = PromptTemplate(
 judge_end_of_round_reflection_prompt = PromptTemplate(
     input_variables=["affirmative_response", "negative_response", "round_num"],
     template=JUDGE_END_OF_ROUND_PROMPT_REFLECTION
+)
+
+verbalised_sampling_system_prompt = PromptTemplate(
+    input_variables=[],
+    template=verbalised_sampling_system_prompt
 )
