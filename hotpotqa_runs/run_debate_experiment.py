@@ -26,7 +26,6 @@ def build_llm_kwargs(args: argparse.Namespace) -> Dict[str, Any]:
         "temperature": args.temperature,
         "max_tokens": args.max_tokens,
         "model_name": args.model_name,
-        "model_kwargs": {"stop": "\n"},
     }
 
 
@@ -46,13 +45,13 @@ def main() -> None:
         for meta, context in zip(metadata, contexts):
             coordinator = DebateCoordinator(
                 question=meta["question"],
-                context=context,
                 answer_key=meta["answer"],
-                num_agents=args.num_agents,
-                num_rounds=args.num_rounds,
+                num_debators=args.num_agents,
+                max_num_rounds=args.num_rounds,
                 llm_kwargs=llm_kwargs,
             )
-            outcome = coordinator.run()
+            # TODO: context should be used as scratchpad, but need to clarify the architecture
+            outcome = coordinator.run(scratchpad=context)
 
             summary_records.append(
                 {

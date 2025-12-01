@@ -166,26 +166,32 @@ Reflection:"""
 #  Using the opinion of other agents as additional advice, can you give an updated response ..."
 
 
-# No more 'you are a debator' thing, which IMO probably for the best
-# Typical reflection prompt it's labeled as 'your' reasoning traces, I think for the structure of the 'debate' it makes more sense to say its another model's reasoning traces -> maybe not, let's see
-DEBATER_META_PROMPT_REFLECTION = """You are an advanced reasoning agent that's capable of improving through self-reflection. You will be given a previous reasoning trial in which you were given access to an Docstore API environment and a question to answer.
-You were unsuccessful in answering the question either because you guessed the wrong answer with Finish[<answer>], or you used up your set number of reasoning steps. In a few sentences, Diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. Use complete sentences.  
+# Debate prompts adapted for direct question answering (Society of Mind approach)
+# Based on https://openreview.net/pdf?id=zj7YuTE4t8
+DEBATER_META_PROMPT_REFLECTION = """You are an advanced reasoning agent capable of answering questions based on provided context.
+You will analyze the given information carefully and provide a well-reasoned answer.
 
-A few examples of such reflections are:
-{examples}'
+A few examples of such reasoning are:
+{examples}
 """
 
-# Arguably shouldn't be a seperate prompt, but organizing like this for now so that stuff like personas can be added in later
+# Initial prompt for direct question answering
 DEBATOR_INITIAL_PROMPT = """
-Previous trial:
-Question: {question}{scratchpad}
+Question: {question}
 
-Reflection:"""
+Context: {scratchpad}
 
-#No more affirmative-negative prompts, so exactly how does the paper gaurantee that the agents generate different responses other than temp param??
+Think carefully about the question and context provided. State your reasoning in a Thought, then provide your Answer.
+Format: Thought: <your reasoning>
+Answer: <your answer>"""
+
+# Updated debate prompt for QA task
 DEBATOR_REPLY = """
-These are the reflections that other agents analyzing your reasoning traces came up with: {debator_responses}
-Using the opinion of other agents as additional advice, can you give an updated response ..."""
+These are the answers that other agents came up with: {debator_responses}
+Using the opinions of other agents as additional advice, can you give an updated response?
+Think carefully and provide your updated reasoning and answer.
+Format: Thought: <your reasoning>
+Answer: <your answer>"""
 
 
 #Some method of consensus extraction is needed, as stated in paper: 'In cases of disagreement, we took the majority answer across agents at the end of debate.'
@@ -199,10 +205,13 @@ Remember that your job is to keep the debate going until its clear that all side
 Output your response as {{\"consensus_reached\": True or False, \"debator_id\": <int>, \"reason\": <str>}} don't include any other sentences or words outside of the json. 
 """
 
-#Another prompt to choose a verdict even if a consensus hasn't been reached.
-# NOTE: This could either summarize the consensus or just choose the 'winner' and we take their last reflection, maybe even for the other prompt too
-DETERMINE_CONSENSUS = """You are a highly capable moderator of a debate between agents. These debators are analyzing the reasoning traces of some other agent that failed to answer the question it was given and trying to determine why it failed.
-You will view this debate, determine which debator had the most convincing argument, and output their view as succinctly as possible. 
+# Another prompt to choose a verdict even if a consensus hasn't been reached.
+DETERMINE_CONSENSUS = """You are a highly capable moderator of a debate between agents trying to answer a question.
+You will view this debate, determine which agent had the most convincing answer, and output their answer.
+
+Provide your response in the format:
+Thought: <your reasoning about which answer is best>
+Answer: <the best answer from the debate>
 
 Debate log:
 {debate_log}
@@ -253,4 +262,52 @@ determine_consensus_prompt = PromptTemplate(
                                 template=DETERMINE_CONSENSUS
                                 )
 
-verbalised_sampling_system_prompt = PromptTemplate(template = VERBALISED_SAMPLING_SYSTEM_PROMPT, input_variables = [])
+# --- NEW PROMPTS FOR MAD-REFLEXION ---
+
+DEBATER_AFFIRMATIVE_PROMPT_REFLECTION = """Previous trial:
+Question: {question}{scratchpad}
+
+Diagnose the failure and propose a high-level plan to fix it.
+Reflection:"""
+
+DEBATER_NEGATIVE_PROMPT_REFLECTION = """Previous trial:
+Question: {question}{scratchpad}
+
+The other debater suggested: {debator_response}
+
+Do you agree with this diagnosis and plan? If not, provide your own critique and alternative plan.
+Reflection:"""
+
+JUDGE_META_PROMPT_REFLECTION = """You are a moderator. There are debaters discussing why a previous agent failed to answer a question.
+At the end of each round, you will evaluate their arguments and decide if they have reached a consensus on the best "Reflection" (diagnosis + plan).
+Output your response in the following json format:
+{{\"preference_found\": true or false, \"reason\": \"...\", \"summary_of_winning_position\": \"...\"}}
+"""
+
+JUDGE_END_OF_ROUND_PROMPT_REFLECTION = """Round {round_num} ended.
+Debator 0: {affirmative_response}
+Debator 1: {negative_response}
+
+Evaluate the arguments. If there is a clear, actionable plan that both agree on (or one is clearly superior), set preference_found to true and summarize it in 'summary_of_winning_position'.
+"""
+
+# Register the new templates
+debate_affirmative_reflection_prompt = PromptTemplate(
+    input_variables=["question", "scratchpad"],
+    template=DEBATER_AFFIRMATIVE_PROMPT_REFLECTION
+)
+
+debate_negative_reflection_prompt = PromptTemplate(
+    input_variables=["question", "scratchpad", "debator_response"],
+    template=DEBATER_NEGATIVE_PROMPT_REFLECTION
+)
+
+judge_meta_reflection_prompt = PromptTemplate(
+    input_variables= [], # Kept for compatibility, though not strictly used in template
+    template=JUDGE_META_PROMPT_REFLECTION
+)
+
+judge_end_of_round_reflection_prompt = PromptTemplate(
+    input_variables=["affirmative_response", "negative_response", "round_num"],
+    template=JUDGE_END_OF_ROUND_PROMPT_REFLECTION
+)

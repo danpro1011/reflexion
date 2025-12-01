@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from llm import AnyOpenAILLM
 from prompts import debate_meta_reflection_prompt, debator_response_prompt, debator_initial_prompt, consensus_reached_prompt, determine_consensus_prompt, verbalised_sampling_system_prompt
 from fewshots import REFLECTIONS
+from environment import normalize_answer, EM
 
 try:
     from langchain_core.prompts import PromptTemplate
@@ -30,7 +31,48 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def extract_json_from_text(text: str) -> Optional[Dict]:
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    json_pattern = r'```(?:json)?\s*(\{.*?\})\s*```'
+    matches = re.findall(json_pattern, text, re.DOTALL)
+    for match in matches:
+        try:
+            return json.loads(match)
+        except json.JSONDecodeError:
+            continue
+
+    json_obj_pattern = r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}'
+    matches = re.findall(json_obj_pattern, text, re.DOTALL)
+    for match in matches:
+        try:
+            return json.loads(match)
+        except json.JSONDecodeError:
+            continue
+
+    brace_count = 0
+    start_idx = -1
+    for i, char in enumerate(text):
+        if char == '{':
+            if brace_count == 0:
+                start_idx = i
+            brace_count += 1
+        elif char == '}':
+            brace_count -= 1
+            if brace_count == 0 and start_idx != -1:
+                try:
+                    return json.loads(text[start_idx:i+1])
+                except json.JSONDecodeError:
+                    start_idx = -1
+
+    return None
+
+
 FINISH_PATTERN = re.compile(r"Finish\\[(.*?)\\]", re.IGNORECASE)
+ANSWER_PATTERN = re.compile(r"Answer:\s*(.+)", re.IGNORECASE)
 
 
 def extract_answer(completion: str) -> str:
@@ -47,23 +89,38 @@ def extract_answer(completion: str) -> str:
         return match.group(1).strip()
     return completion.strip()
 
-def extract_text_tags_xml(s):
-    """Helper function to extract the answers from the verbalized sampling prompt"""
-    try:
-        wrapped = f"<root>{s}</root>"
-        root = ET.fromstring(wrapped)
-        texts = []
-        for elem in root.iter("text"):
-            if elem.text is None:
-                texts.append("")  # keep empty if <text></text> or <text/>
-            else:
-                texts.append(elem.text.strip())
-        return texts
-    except ET.ParseError:
-        # Fallback: regex (works on messy input)
-        pattern = r"<text\s*>(.*?)</text\s*>"
-        matches = re.findall(pattern, s, re.DOTALL | re.IGNORECASE)
-        return [m.strip() for m in matches]
+
+def extract_qa_answer(completion: str) -> str:
+    """
+    Extract answer from QA debate format: "Thought: ... Answer: ..."
+    Falls back to extracting from Thought if Answer is not found.
+    """
+    # Try to find "Answer:" in the response
+    for line in reversed(completion.splitlines()):
+        match = ANSWER_PATTERN.search(line)
+        if match:
+            return match.group(1).strip()
+    match = ANSWER_PATTERN.search(completion)
+    if match:
+        return match.group(1).strip()
+
+    # Fallback: extract from "Thought:" section
+    thought_pattern = re.compile(r"Thought:\s*(.+)", re.IGNORECASE | re.DOTALL)
+    thought_match = thought_pattern.search(completion)
+    if thought_match:
+        thought_text = thought_match.group(1).strip()
+
+        # Extract the last sentence, which typically contains the answer
+        sentences = [s.strip() for s in thought_text.split('.') if s.strip()]
+        if sentences:
+            last_sentence = sentences[-1]
+            # Strip common reasoning prefixes
+            for prefix in ["Therefore,", "Thus,", "So,", "Hence,"]:
+                if last_sentence.startswith(prefix):
+                    last_sentence = last_sentence[len(prefix):].strip()
+            return last_sentence
+
+    return completion.strip()
 
 class DebateLLM:
     def __init__(
@@ -81,11 +138,10 @@ class DebateLLM:
             temperature=.25,
             max_tokens=256,
             model_name="gpt-3.5-turbo",
-            model_kwargs={"stop": "\n"}, #Makes it stop after a new line, to limit long responses
         )
         self.debate_id = debate_id
 
-        #This stays constant so convienient to just save it here 
+        # System prompt stays constant across debate rounds
         self.system_prompt = SystemMessage(content=system_prompt.format(examples=REFLECTIONS))
 
         self.initial_position = initial_position
@@ -101,28 +157,23 @@ class DebateLLM:
 
         return response
 
-    # The prompt for this should pretty much always be the same, so I don't see the need to pass it in as an argument
     def debate_response(self, debate_history) -> str:
-        question_context = f"Previous Trial:\nQuestion{self.question}{self.scratchpad}\nThese are the reflections that other agents analyzing your reasoning traces came up with:"
+        question_context = f"Question: {self.question}\n\nContext: {self.scratchpad}\n\nThese are the answers that other agents provided:"
         question_context = HumanMessage(content = question_context)
 
-        debate_history = self._format_debate_history(debate_history)
+        formatted_history = self._format_debate_history(debate_history)
 
-        response_question = HumanMessage(content = "Using the opinion of other agents as additional advice, can you give an updated response ...")
-        #Order is system_prompt + question/scratchpad context + debate_history + finally the question
-        response = self.llm.query([self.system_prompt, question_context, *debate_history, response_question])
+        response_question = HumanMessage(content = "Using the opinions of other agents as additional advice, can you give an updated response?\nThink carefully and provide your updated reasoning and answer.\nFormat: Thought: <your reasoning>\nAnswer: <your answer>")
+
+        response = self.llm.query([self.system_prompt, question_context, *formatted_history, response_question])
 
         return response
     
     def _format_debate_history(self, debate_history) -> List:
         """
-        Because of how the old LangChain library worked, this function is needed. It basically takes the debate history
-        and formats it so that the LLM knows that the responses that it gave came from itself
+        Format debate history for LangChain: marks own responses as AIMessage
+        and other agents' responses as ChatMessage.
         """
-
-        # Capture groups:
-        #   (1) debator ID
-        #   (2) message content
         pattern = re.compile(
             r"Debator\s+(\d+):\s*(.*?)\n(?=Debator\s+\d+:|$)",
             re.DOTALL
@@ -139,7 +190,7 @@ class DebateLLM:
                     AIMessage(content=content.strip())
                 )
             else:
-                # It's recommended to use 'chat message' + role assistant for task like this rather than have it be part of 'human message' 
+                # Use ChatMessage for other agents' responses
                 formatted_messages.append(
                     ChatMessage(
                         role="assistant",
@@ -150,31 +201,34 @@ class DebateLLM:
 
         return formatted_messages
 
-
-#TODO: This class is written around the assumption that we're just using the openai llm, but it really should work for any LLM type
 class DebateCoordinator:
     def __init__(
         self,
         question: str,
         answer_key: str,
-        max_num_rounds: int = 5, #This is the hard max, not recommended or average number of runs
-        llm: AnyOpenAILLM = None
+        num_debators: int = 3,
+        max_num_rounds: int = 5,
+        llm: AnyOpenAILLM = None,
+        llm_kwargs: Dict = None
     ) -> None:
         self.question = question
         self.answer_key = answer_key
+        self.num_debators = num_debators
         self.max_num_rounds = max(1, max_num_rounds)
         self.round_number = 0
         self.debate_history = ""
-        
-        #TODO: Better functionality for changing the LLM model
-        self.model_name = "gpt-3.5-turbo" 
 
-        self.llm = llm or AnyOpenAILLM(
-            temperature=0,
-            max_tokens=256,
-            model_name=self.model_name,
-        )
-        #NOTE: Do we want the 'stop' thingy here too or not
+        # Configure LLM with provided kwargs or use defaults
+        if llm_kwargs:
+            self.model_name = llm_kwargs.get("model_name", "gpt-3.5-turbo")
+            self.llm = llm or AnyOpenAILLM(**llm_kwargs)
+        else:
+            self.model_name = "gpt-3.5-turbo"
+            self.llm = llm or AnyOpenAILLM(
+                temperature=0,
+                max_tokens=256,
+                model_name=self.model_name,
+            )
 
 
     def _build_debators(self, num_debators: int, scratchpad:str, llm= None) -> List[DebateLLM]:
@@ -191,11 +245,11 @@ class DebateCoordinator:
         reflections = extract_text_tags_xml(reflections)
 
         for indx in range(num_debators):
+            # Use varying temperatures to encourage diverse perspectives
             llm = AnyOpenAILLM(
                 temperature=0,
                 max_tokens=256,
                 model_name="gpt-3.5-turbo",
-                model_kwargs={"stop": "\n"},
             )
             debators.append(
                 DebateLLM(
@@ -208,24 +262,29 @@ class DebateCoordinator:
             )
         return debators
 
-    #TODO: Add some type of logging for this
-    def run(self, num_debators, scratchpad) -> str:
-        #Context has to be passed into this and debators have to be build just for that instance, 
-        # just based off of how its designed right now
+    def run(self, scratchpad) -> Dict[str, Any]:
+        """
+        Run the multi-agent debate process.
+
+        Returns:
+            Dict containing final_answer, normalized_final_answer, is_correct,
+            rounds, and majority_votes.
+        """
         rounds: List[List] = []
 
-        debators = self._build_debators(num_debators,scratchpad) 
-        
+        debators = self._build_debators(self.num_debators, scratchpad)
+
         num_debate_rounds = 0
         curr_round = []
         consensus = ""
-        while(num_debate_rounds < self.max_num_rounds):
-            #First round you have to generate the initial responses, after that it's all the same
+        consensus_reached = False
+
+        while num_debate_rounds < self.max_num_rounds:
             if num_debate_rounds == 0:
                 for debator in debators:
                     response = debator.initial_response()
                     curr_round.append(response)
-            
+
             else:
                 for debator in debators:
                     response = debator.debate_response(self.debate_history)
@@ -239,51 +298,66 @@ class DebateCoordinator:
             consensus_reached, debator_id = self._find_consensus()
 
             consensus = self._extract_debator_response(debator_id)
-            
+
             if consensus_reached:
                 break
 
-        #If we reached the max amount of rounds without arriving at a consensus, we must extract some type of consensus
+        # If max rounds reached without consensus, have judge select best answer
         if not consensus_reached:
             print("No consensus reached")
-            prompt = HumanMessage(content = determine_consensus_prompt(debate_log = self.debate_history))
-            consensus = self.llm(prompt)
-            
-        print("--"*20 + "Full debate log" + "--"*20)
+            prompt = HumanMessage(content = determine_consensus_prompt.format(debate_log = self.debate_history))
+            consensus = self.llm.query([prompt])
+
+        print("=" * 50)
+        print("Full Debate Log")
+        print("=" * 50)
         pp.pprint(rounds)
 
-        return consensus
+        # Extract and evaluate the final answer
+        final_answer = extract_qa_answer(consensus)
+        normalized_final = normalize_answer(final_answer)
+        normalized_key = normalize_answer(self.answer_key)
+
+        # Check correctness using substring matching (suitable for QA tasks)
+        is_correct = normalized_key in normalized_final or EM(normalized_final, normalized_key)
+
+        # Determine majority vote from final round
+        majority_votes = final_answer
+        if rounds:
+            last_round_answers = [extract_qa_answer(resp) for resp in rounds[-1]]
+            if last_round_answers:
+                majority_votes = max(set(last_round_answers), key=last_round_answers.count)
+
+        return {
+            "final_answer": final_answer,
+            "normalized_final_answer": normalized_final,
+            "is_correct": is_correct,
+            "rounds": rounds,
+            "majority_votes": majority_votes,
+        }
     
 
     def _find_consensus(self) -> tuple[bool, str]:
         """
-        Helper function that views the debate log and determines whether or not a verdict has been reached. 
-        Right now just having the 'judge' llm do this, but there are other potential methods to accomplish a similar task
+        Check if agents have reached consensus on an answer.
         """
-        system_prompt = SystemMessage(content = consensus_reached_prompt.format())
-        question = HumanMessage(content = f"The debate log from the most recent round of debate is\n{self.debate_history}")
-        verdict = self.llm.query([system_prompt, question])
-
-        #Apparently, python syntax is different from json syntax, and if the bool is loaded pythonically, json.loads crashes
+        verdict = self.llm(consensus_reached_prompt.format(debate_log=self.debate_history))
+        # Normalize Python booleans to JSON format
         safe = verdict.replace("True", "true").replace("False", "false").replace("None", "null")
-        
-        #Even then, gpt still finds way to not return the proper format:
-        try: 
+
+        try:
             verdict = json.loads(safe)
-        except:
-            print("ERROR: Unable to load ", safe)
+        except json.JSONDecodeError:
+            print(f"Warning: Unable to parse consensus verdict: {safe}")
             verdict = {"consensus_reached": False, "debator_id": -1}
 
         return verdict["consensus_reached"], verdict.get("debator_id",-1)
     
     def _extract_reflection(self, text) -> str:
-        """
-        Assuming that the output passed into text is of the format '<sometext> Reflection[<sentence>].
-        And we extract the <sentence> inside of the Reflection block.
-        """
+        """Extract content from Reflection[...] format."""
         match = re.search(r"Reflection\[(.*?)\]", text, re.DOTALL)
         if not match:
-            print("Not able to extract the reflection from ", text)
+            print(f"Warning: Could not extract reflection from: {text}")
             return ""
         return match.group(1).strip()
         
@@ -291,24 +365,15 @@ class DebateCoordinator:
         pattern = re.compile(r"Debator (\d+):\s*(.*?)\n(?=Debator \d+:|$)", re.DOTALL)
         matches = pattern.findall(self.debate_history)
 
-        resp = ""
         for debator_id, text in matches:
             if int(debator_id) == target_debator_id:
-               resp = text
-        
-        if resp == "": print("ERROR: debator id not found")
-        return resp
+                return text
+
+        print(f"Warning: Debator {target_debator_id} not found in history")
+        return ""
     
     def _update_debate_history(self, new_round):
-        #TODO: If we're limiting the context window, maybe only show the last round of debate to the debators
-        #Tracking the round may not be necessary
-        self.debate_history += "--"*5 + f"Start of round {self.round_number}" + "--"*5 + '\n'
-
+        self.debate_history += f"\n{'='*20} Round {self.round_number} {'='*20}\n"
         for indx, response in enumerate(new_round):
-            self.debate_history += f"Debator {indx}: " + response + "\n"
-            
+            self.debate_history += f"Debator {indx}: {response}\n"
         self.round_number += 1
-
-    #TODO: Some function that does this is likely gonna be needed
-    def _summarize_debate_history(self):
-        ...
