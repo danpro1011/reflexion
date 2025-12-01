@@ -73,7 +73,7 @@ class DebateLLM:
         
         persona_instruction = (
             f"\nAct strictly according to your persona ({self.persona}). "
-            "Critique the code's logic, syntax, and edge case handling. "
+            "Walk through the code line-by-line using the failing input. "
             "When proposing a fix, you may provide the corrected code block or pseudocode."
         )
         
@@ -82,7 +82,6 @@ class DebateLLM:
             "1. Trust the error message provided in the context. "
             "2. Do not assume the test case is wrong unless proven otherwise. "
             "3. Focus on the specific function implementation. "
-            "4. Be concise and technical. Do not be polite, be efficient."
         )
 
         self.system_prompt = SystemMessage(content=base_content + persona_instruction + safety_instruction)
@@ -230,11 +229,14 @@ class DebateCoordinator:
 
         # --- Final Extraction ---
         if not debate_finished:
-           final_answer = prev_response
+            final_answer = prev_response
         else:
             final_answer = verdict.get("summary_of_winning_position", prev_response)
             if not final_answer:
                 final_answer = verdict.get("debate_answer", prev_response)
+
+        # Append the full debate log to the final output
+        full_debate_log = self.debate_history
 
         print("--"*20 + " Full Programming Debate Log " + "--"*20)
         pp.pprint(rounds)
@@ -242,7 +244,8 @@ class DebateCoordinator:
         return {
             "final_answer": final_answer,
             "rounds": rounds,
-            "is_correct": False # Unknown until execution
+            "full_debate_log": full_debate_log,  # Include the full debate log
+            "is_correct": False  # Unknown until execution
         }
     
     def _update_debate_history(self, new_round):

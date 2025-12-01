@@ -68,8 +68,9 @@ def run_mad_programming_trials(args):
     debate_jsonl_path = os.path.join(out_dir, "debate_outputs.jsonl")
     debate_txt_path = os.path.join(out_dir, "debate_outputs.txt")
     attempts_txt_path = os.path.join(out_dir, "attempts_summary.txt")
+    accuracy_txt_path = os.path.join(out_dir, "final_accuracy.txt")  # New accuracy log file
     # create files if missing
-    for p in (debate_jsonl_path, debate_txt_path, attempts_txt_path):
+    for p in (debate_jsonl_path, debate_txt_path, attempts_txt_path, accuracy_txt_path):
         if not os.path.exists(p):
             with open(p, "w", encoding="utf-8") as _:
                 pass
@@ -80,6 +81,7 @@ def run_mad_programming_trials(args):
     model = model_factory(args.model)
 
     processed = 0
+    passed_count = 0  # Counter for passed tests
     for i, item in enumerate_resume(dataset, args.output_path):
         if args.max_examples is not None and processed >= args.max_examples:
             print(f"[+] Reached max_examples={args.max_examples}. Stopping.")
@@ -100,6 +102,7 @@ def run_mad_programming_trials(args):
 
             if execution_result['passed']:
                 print(f"Trial {trial}: PASS")
+                passed_count += 1  # Increment passed count
                 break
             
             print(f"Trial {trial}: FAIL")
@@ -216,6 +219,16 @@ def run_mad_programming_trials(args):
                 af.write("-"*80 + "\n\n")
         except Exception as e:
             print(f"WARNING: failed to write attempts summary txt: {e}")
+
+    # Calculate and write final accuracy
+    if processed > 0:
+        accuracy = (passed_count / processed) * 100
+        with open(accuracy_txt_path, "w", encoding="utf-8") as af:
+            af.write(f"Final Accuracy: {accuracy:.2f}%\n")
+            af.write(f"Total Tests Processed: {processed}\n")
+            af.write(f"Total Passed: {passed_count}\n")
+    else:
+        print("No tests processed, accuracy cannot be calculated.")
 
 if __name__ == "__main__":
     args = parse_args()

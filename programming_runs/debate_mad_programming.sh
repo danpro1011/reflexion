@@ -6,4 +6,4 @@ python3 /Users/tinachen/Documents/reflexion/programming_runs/debate_mad_programm
     --num_agents 3 \
     --num_rounds 2 \
     --personas "Senior Engineer" "QA Engineer" "Code Reviewer"\
-    # --max_examples 5 \
+    --max_examples 2 \

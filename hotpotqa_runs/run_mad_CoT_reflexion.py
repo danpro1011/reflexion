@@ -162,15 +162,71 @@ def run_mad_reflexion_trials(
                     generated_reflection = str(debate_result)
                     debate_text = generated_reflection
 
-                # Append the debate output as a new reflection for the agent
-                agent.reflections.append(generated_reflection)
-                print(f"  [+] Debate finished. Reflection added.")
+                # Append a structured reflection containing:
+                #  - consensus (final answer)
+                #  - short_summary (truncated summary safe for next prompt)
+                #  - full_debate_log (pointer/inline if small; stored in jsonl above)
+                full_log = debate_entry.get("full_debate_log") if 'debate_entry' in locals() else (debate_result if isinstance(debate_result, (dict, list, str)) else str(debate_result))
+                short_summary = None
+                try:
+                    # create a short token-safe summary (simple heuristic truncate of consensus + first N chars of full log)
+                    fl_text = json.dumps(full_log, ensure_ascii=False) if not isinstance(full_log, str) else full_log
+                    short_summary = (generated_reflection or "").strip()
+                    if not short_summary:
+                        short_summary = (fl_text[:800] + "...") if len(fl_text) > 800 else fl_text
+                    else:
+                        # append a small context snippet
+                        snippet = (fl_text[:500] + "...") if len(fl_text) > 500 else fl_text
+                        short_summary = short_summary + "\n\nContext-snippet:\n" + snippet
+                except Exception:
+                    short_summary = (generated_reflection or "")[:1000]
+
+                # store structured reflection (safe size) and leave full log in file / debate_jsonl
+                reflection_record = {
+                    "consensus": generated_reflection,
+                    "short_summary": short_summary,
+                    "full_debate_ref": {
+                        "jsonl_path": os.path.join(args.output_dir, "debate_outputs.jsonl"),
+                        "question_id": metadata[idx]["id"],
+                        "trial": trial,
+                    }
+                }
+                agent.reflections.append(reflection_record)
+                print(f"  [+] Debate finished. Reflection added (consensus + short summary). Full log saved to debate_outputs.jsonl")
 
                 # Write a neat, timestamped debate log entry to output_dir/debate_outputs.txt
                 os.makedirs(args.output_dir, exist_ok=True)
                 debate_log_path = os.path.join(args.output_dir, "debate_outputs.txt")
+                debate_jsonl_path = os.path.join(args.output_dir, "debate_outputs.jsonl")
+                
+                # Ensure JSONL file exists
+                if not os.path.exists(debate_jsonl_path):
+                    with open(debate_jsonl_path, "w", encoding="utf-8") as _:
+                        pass
+
                 ts = datetime.now(timezone.utc).isoformat()
                 personas_str = ", ".join(agent_personas)
+
+                # Log debate to JSONL
+                debate_entry = {
+                    "timestamp": ts,
+                    "trial": trial,
+                    "agent_index": idx,
+                    "question_id": metadata[idx]['id'],
+                    "question": metadata[idx]['question'],
+                    "ground_truth": metadata[idx]['answer'],
+                    "personas": agent_personas,
+                    "scratchpad": agent.scratchpad,
+                    "debate_consensus": generated_reflection,
+                    "debate_rounds": debate_result.get("rounds") if isinstance(debate_result, dict) else [],
+                    "full_debate_log": debate_result.get("full_debate_log") if isinstance(debate_result, dict) else debate_text
+                }
+                try:
+                    with open(debate_jsonl_path, "a", encoding="utf-8") as jf:
+                        jf.write(json.dumps(debate_entry, ensure_ascii=False) + "\n")
+                except Exception as e:
+                    print(f"WARNING: failed to write debate JSONL: {e}")
+
                 with open(debate_log_path, "a", encoding="utf-8") as df:
                     df.write("\n" + "="*80 + "\n")
                     df.write(f"Timestamp: {ts}\n")
@@ -184,6 +240,10 @@ def run_mad_reflexion_trials(
                     df.write("-"*80 + "\n")
                     df.write("Debate output / consensus:\n")
                     df.write(debate_text + "\n")
+                    df.write("-"*80 + "\n")
+                    df.write("Full Debate Rounds:\n")
+                    if isinstance(debate_result, dict) and "rounds" in debate_result:
+                        df.write(json.dumps(debate_result["rounds"], indent=2) + "\n")
                     df.write("="*80 + "\n\n")
 
     return {
