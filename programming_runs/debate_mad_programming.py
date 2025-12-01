@@ -2,19 +2,16 @@ import argparse
 import os
 import sys
 import json
-from datetime import datetime, timezone
+import multiprocessing
+from io import StringIO
+from typing import List
 
-# Add parent dir to path to allow importing from sibling directories if needed
+# Add parent dir to path to allow importing from sibling directories
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-from debate_personas_programming import DebateCoordinator
-
-# Import Programming specific modules
-# Note: These imports depend on your specific reflexion.py structure in programming_runs
-from reflexion import PyReflexionAgent, ReflexionStrategy
+from debate_coordinator_programming import DebateCoordinator
 from utils import enumerate_resume, make_printv, write_jsonl
-from executors import PyExecutor # Or the specific executor for your language
+from generators import generator_factory, model_factory
 
 # --- CODING PERSONAS ---
 CODING_PERSONAS = {
@@ -40,11 +37,57 @@ Ensure the code actually matches the function signature provided.
 """
 }
 
+def run_humaneval_test(code: str, test_code: str, timeout: int = 5) -> dict:
+    """
+    Runs the generated code + the HumanEval test harness.
+    Returns {'passed': bool, 'result': str}
+    """
+    # HumanEval tests usually look like:
+    # def check(candidate): ...
+    # check(solution)
+    # So we just need to concatenate them.
+    
+    full_program = f"from typing import *\nimport math\n\n{code}\n\n{test_code}"
+    
+    def target(queue):
+        # Capture stdout/stderr
+        capture = StringIO()
+        sys.stdout = capture
+        sys.stderr = capture
+        
+        try:
+            # Create a fresh global scope
+            exec_globals = {}
+            exec(full_program, exec_globals)
+            queue.put({"passed": True, "result": "Tests Passed"})
+        except Exception:
+            import traceback
+            # Return the traceback as feedback
+            queue.put({"passed": False, "result": traceback.format_exc()})
+        finally:
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+
+    queue = multiprocessing.Queue()
+    p = multiprocessing.Process(target=target, args=(queue,))
+    p.start()
+    p.join(timeout)
+
+    if p.is_alive():
+        p.terminate()
+        p.join()
+        return {"passed": False, "result": f"TimeoutError: Execution exceeded {timeout}s"}
+
+    if not queue.empty():
+        return queue.get()
+    return {"passed": False, "result": "Process crashed silently"}
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", type=str, default="./data/humaneval-py.jsonl")
     parser.add_argument("--output_path", type=str, default="./results/mad_python_results.jsonl")
     parser.add_argument("--model", type=str, default="gpt-3.5-turbo")
+    parser.add_argument("--language", type=str, default="python")
     parser.add_argument("--num_trials", type=int, default=3)
     parser.add_argument("--num_agents", type=int, default=2)
     parser.add_argument("--num_rounds", type=int, default=2)
@@ -55,6 +98,10 @@ def parse_args():
 def run_mad_programming_trials(args):
     # Load Dataset
     dataset = []
+    if not os.path.exists(args.dataset_path):
+        print(f"Error: Dataset not found at {args.dataset_path}")
+        return
+
     with open(args.dataset_path, 'r') as f:
         for line in f:
             dataset.append(json.loads(line))
@@ -67,8 +114,9 @@ def run_mad_programming_trials(args):
         desc = CODING_PERSONAS.get(key, key)
         agent_personas.append(desc)
 
-    print_v = make_printv(args.verbose)
-    results = []
+    # Initialize Factories
+    gen = generator_factory(args.language)
+    model = model_factory(args.model)
 
     print(f"[*] Starting MAD Programming Run with {len(dataset)} tasks.")
     print(f"[*] Personas: {args.personas}")
@@ -77,25 +125,19 @@ def run_mad_programming_trials(args):
         task_id = item['task_id']
         print(f"\n--- Task {task_id} ---")
         
-        # Initialize Agent
-        agent = PyReflexionAgent(
-            model=args.model,
-            max_iters=args.num_trials,
-            strategy=ReflexionStrategy.REFLEXION
-        )
-
-        # Initial Attempt
-        code = agent.init(item["prompt"], item["entry_point"])
+        # 1. First Attempt (Simple Strategy)
+        code = gen.func_impl(item["prompt"], model, "simple")
+        
+        is_passing = False
+        feedback = ""
+        trial = 0
         
         # Execution Loop
         for trial in range(1, args.num_trials + 1):
             # Execute Code
-            executor = PyExecutor()
-            # Note: You might need to adjust how tests are passed depending on your dataset format
-            # HumanEval usually has 'test' field or 'example_test'
             tests = item.get("test", "") or item.get("example_test", "")
             
-            execution_result = executor.execute(code, tests)
+            execution_result = run_humaneval_test(code, tests)
             is_passing = execution_result['passed']
             feedback = execution_result['result'] # Traceback or error message
 
@@ -130,26 +172,28 @@ def run_mad_programming_trials(args):
 
                 print(f"  [+] Debate Consensus: {consensus[:100]}...")
 
-                # Inject consensus as a "Reflection"
-                # We manually append to the agent's memory or use a specific method if available
-                # Assuming standard ReflexionAgent has a way to add feedback
-                # If not, we might need to override the internal prompt
-                
-                # Standard Reflexion usually generates self-reflection here.
-                # We override it by passing our consensus as the 'feedback' for the next step
-                code = agent.step(consensus) 
+                # 2. Next Attempt (Reflexion Strategy using Debate Consensus)
+                # We pass the consensus as 'self_reflection'
+                code = gen.func_impl(
+                    func_sig=item["prompt"],
+                    model=model,
+                    strategy="reflexion",
+                    prev_func_impl=code,
+                    feedback=feedback,
+                    self_reflection=consensus
+                )
 
         # Log Result
-        results.append({
+        cur_result = {
             "task_id": task_id,
             "completion": code,
             "passed": is_passing,
             "trials_used": trial,
-            "log": agent.scratchpad if hasattr(agent, 'scratchpad') else ""
-        })
+            "log": consensus if 'consensus' in locals() else ""
+        }
         
         # Save progress
-        write_jsonl(args.output_path, results)
+        write_jsonl(args.output_path, [cur_result], append=True)
 
 if __name__ == "__main__":
     args = parse_args()
