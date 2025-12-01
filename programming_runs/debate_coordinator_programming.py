@@ -1,171 +1,201 @@
-import re
-import os
 import json
+import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, TypedDict
-import pprint as pp
+from typing import Any, Dict, List, Optional
 
 from llm import AnyOpenAILLM
-# We reuse the prompt templates, but we will override the system instructions heavily
-from prompts import (
-    debate_meta_reflection_prompt, 
-    debator_response_prompt, 
-    debate_affirmative_reflection_prompt, 
-    debate_negative_reflection_prompt, 
-    judge_meta_reflection_prompt, 
-    judge_end_of_round_reflection_prompt
-)
-from fewshots import REFLECTIONS
 
 try:
     from langchain_core.prompts import PromptTemplate
 except ImportError:
     from langchain.prompts import PromptTemplate
+
 try:
     from langchain.schema import HumanMessage, SystemMessage, AIMessage
 except ImportError:
     from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
-from dotenv import load_dotenv
-load_dotenv()
 
-def extract_code(completion: str) -> str:
+# --- Helper: extract python code blocks from responses ---
+
+def extract_code_block(completion: str) -> str:
     """
-    Helper to extract python code blocks from debate responses.
+    Extract the first ```python ... ``` block from a string.
+    Falls back to returning the whole string if no block found.
     """
-    pattern = re.compile(r"```python\n(.*?)```", re.DOTALL)
+    if not isinstance(completion, str):
+        return ""
+
+    pattern = re.compile(r"```python\s*(.*?)```", re.DOTALL | re.IGNORECASE)
     match = pattern.search(completion)
     if match:
         return match.group(1).strip()
+
+    # Fallback: sometimes the model just outputs code without fences
     return completion.strip()
 
+
+# --- Debater LLM wrapper ---
+
+@dataclass
 class DebateLLM:
-    def __init__(self, llm=None, persona: str = "", system_prompt: str = "", debate_id: int = 0, question: str = "", scratchpad: str = "", **kwargs):
-        # store basic fields passed by the coordinator
-        self.llm = llm or AnyOpenAILLM(
-            temperature=0.2,
-            max_tokens=512,
-            model_name="gpt-3.5-turbo"
-        )
-        self.persona = persona
-        self.system_prompt = system_prompt
-        self.debate_id = debate_id
-        self.question = question
-        self.scratchpad = scratchpad
+    llm: AnyOpenAILLM
+    persona: str
+    debate_id: int
+    question: str
+    context: str
 
-        # get model kwargs if present, otherwise use empty dict
-        model_kwargs = getattr(self.llm, "model_kwargs", {}) or {}
-
-        # maintain previous logic but use the safe model_kwargs variable
-        if model_kwargs.get("stop") == "\n":
-            self.stop = "\n"
-        else:
-            self.stop = model_kwargs.get("stop", None)
-
-        # --- CUSTOM SYSTEM PROMPT FOR PROGRAMMING ---
-        # We override the generic prompt to ensure they focus on CODE, not QA.
-        
-        base_content = (
-            f"You are participating in a technical code review debate.\n"
-            f"Your Persona: {self.persona}\n"
-            f"Task: Analyze the failed code and the error message to propose a fix.\n"
-        )
-        
-        persona_instruction = (
-            f"\nAct strictly according to your persona ({self.persona}). "
-            "Walk through the code line-by-line using the failing input. "
-            "When proposing a fix, you may provide the corrected code block or pseudocode."
-        )
-        
-        safety_instruction = (
-            "\n\nCRITICAL INSTRUCTION: "
-            "1. Trust the error message provided in the context. "
-            "2. Do not assume the test case is wrong unless proven otherwise. "
-            "3. Focus on the specific function implementation. "
+    def _system_message(self) -> SystemMessage:
+        return SystemMessage(
+            content=(
+                "You are participating in a multi-agent code review and fixing debate.\n"
+                f"Persona: {self.persona}\n\n"
+                "You will be given:\n"
+                "  - The original problem description (with function signature / docstring).\n"
+                "  - The current failed implementation.\n"
+                "  - The error trace from running unit tests.\n\n"
+                "Your job is to ANALYZE THE BUG and PROPOSE A FIX.\n"
+                "CRITICAL RULES:\n"
+                "  1. Read the original problem carefully and respect the specification.\n"
+                "  2. Assume tests are correct; treat the error trace as truth.\n"
+                "  3. At the end of your answer, you MUST output a full corrected function\n"
+                "     implementation in this exact format:\n\n"
+                "```python\n"
+                "# your full corrected function here\n"
+                "def ...:\n"
+                "    ...\n"
+                "```\n"
+            )
         )
 
-        self.system_prompt = SystemMessage(content=base_content + persona_instruction + safety_instruction)
+    def initial_proposal(self) -> str:
+        """
+        First round: respond directly to question + context.
+        """
+        prompt = (
+            f"Task:\n{self.question}\n\n"
+            "Context (problem + failed code + error):\n"
+            f"{self.context}\n\n"
+            "Explain what is wrong and then provide the corrected function.\n"
+        )
 
-    def initial_response(self, initial_response_prompt: PromptTemplate, prompt_kwargs) -> str:
-        # prompt_kwargs usually contains 'question' and 'scratchpad'
-        prompt = initial_response_prompt.format(**prompt_kwargs)
-        initial_message = HumanMessage(content=prompt)
-        response = self.llm.query([self.system_prompt, initial_message])
-        return response
+        messages = [self._system_message(), HumanMessage(content=prompt)]
+        return self.llm.query(messages)
 
-    def debate_response(self, debator_response: str, debate_history: str) -> str:
-        debate_history_msgs = self._format_debate_history(debate_history)
-        prompt = debator_response_prompt.format(debator_responses=debate_history)
-        response_question = HumanMessage(content=prompt)
-        response = self.llm.query([self.system_prompt, *debate_history_msgs, response_question])
-        return response
-    
-    def _format_debate_history(self, debate_history) -> List:
-        pattern = re.compile(r"Debator (\d+):\s*(.*?)\n(?=Debator \d+:|$)", re.DOTALL)
-        matches = pattern.findall(debate_history)
+    def respond_to_debate(self, debate_history: str) -> str:
+        """
+        Subsequent rounds: see debate history and propose an improved fix.
+        """
+        prompt = (
+            f"Task:\n{self.question}\n\n"
+            "You are in a debate with other engineers. Here is the debate so far:\n"
+            f"{debate_history}\n\n"
+            "Your goal in this round:\n"
+            "  - Critique previous proposals.\n"
+            "  - Fix any logical errors or spec violations you see.\n"
+            "  - If a previous proposal is mostly correct, you may refine it.\n"
+            "  - At the end, output your best corrected function.\n\n"
+            "Remember to end with a full function in a ```python``` code block."
+        )
 
-        formatted_message = []
-        for debator_id, text in matches:
-            if int(debator_id) == self.debate_id:
-               formatted_message.append(AIMessage(content=text)) 
-            else:
-               formatted_message.append(HumanMessage(content= f"Debator {debator_id}: " + text)) 
-        return formatted_message
+        messages = [self._system_message(), HumanMessage(content=prompt)]
+        return self.llm.query(messages)
+
+
+# --- Debate Coordinator ---
 
 class DebateCoordinator:
+    """
+    Multi-agent programming debate + judge that produces a final code snippet.
+
+    Returns from run():
+      {
+        "summary": <text summary of bug / fix>,
+        "code": <string of python code (function)>,
+        "rounds": [[debator_0_round1, debator_1_round1, ...], [...]],
+        "is_correct": False  # we don't know until tests are run
+      }
+    """
+
     def __init__(
         self,
-        question: str, # Function signature / prompt
-        context: str,  # Failed Code + Error Message
-        answer_key: str, # "Passing Tests"
-        num_agents: int = 2, 
-        num_rounds: int = 3, 
+        question: str,
+        context: str,
+        answer_key: str,
+        num_agents: int = 2,
+        num_rounds: int = 2,
         llm_kwargs: Optional[Dict[str, Any]] = None,
-        llm: AnyOpenAILLM = None,
-        personas: List[str] = None
+        llm: Optional[AnyOpenAILLM] = None,
+        personas: Optional[List[str]] = None,
     ) -> None:
         if num_agents < 1:
-            raise ValueError("num_agents must be >= 1 for debate.")
-        
+            raise ValueError("num_agents must be >= 1")
+
         self.question = question
         self.context = context
         self.answer_key = answer_key
-        self.max_num_rounds = max(1, num_rounds)
         self.num_agents = num_agents
-        self.round_number = 0
-        self.debate_history = ""
-        self.llm_kwargs = llm_kwargs
-        
-        # Default Coding Personas
-        if not personas:
-            self.personas = ["Senior Engineer", "QA Engineer"] * num_agents
-        else:
-            self.personas = personas
-            while len(self.personas) < num_agents:
-                self.personas.extend(personas)
-            self.personas = self.personas[:num_agents]
-        
-        self.model_name = "gpt-3.5-turbo" 
+        self.num_rounds = max(1, num_rounds)
+
+        self.llm_kwargs = llm_kwargs or {"model_name": "gpt-3.5-turbo", "temperature": 0.2}
+        self.personas = personas or ["Generic Engineer"] * num_agents
+        while len(self.personas) < num_agents:
+            self.personas.extend(self.personas)
+        self.personas = self.personas[:num_agents]
+
+        # Judge model: lower temperature and slightly shorter outputs
         self.judge_llm = llm or AnyOpenAILLM(
-            temperature=0,
-            max_tokens=256,
-            model_name=self.model_name,
+            temperature=0.0,
+            max_tokens=512,
+            model_name=self.llm_kwargs.get("model_name", "gpt-3.5-turbo"),
         )
 
-    def _build_debators(self, num_debators: int, scratchpad:str, llm_kwargs: Dict[str, Any] = None) -> List[DebateLLM]:
-        debators: List[DebateLLM] = []
-        for indx in range(num_debators):
-            llm = AnyOpenAILLM(**llm_kwargs) if llm_kwargs else None
-            debators.append(
+    def _build_debaters(self) -> List[DebateLLM]:
+        debaters: List[DebateLLM] = []
+        for idx in range(self.num_agents):
+            deb_llm = AnyOpenAILLM(**self.llm_kwargs)
+            debaters.append(
                 DebateLLM(
+                    llm=deb_llm,
+                    persona=self.personas[idx],
+                    debate_id=idx,
                     question=self.question,
-                    scratchpad=scratchpad,
-                    llm=llm,
-                    debate_id=indx,
-                    persona=self.personas[indx]
+                    context=self.context,
                 )
             )
-        return debators
+        return debaters
+
+    def _build_judge_prompt(self, debate_rounds: List[List[str]]) -> str:
+        """
+        Flatten debate rounds into a readable transcript to feed to the judge.
+        """
+        lines: List[str] = []
+        for r_idx, round_responses in enumerate(debate_rounds, start=1):
+            lines.append(f"=== Round {r_idx} ===")
+            for d_idx, resp in enumerate(round_responses):
+                lines.append(f"Debater {d_idx} ({self.personas[d_idx]}):\n{resp}\n")
+        transcript = "\n".join(lines)
+
+        return (
+            "You are the judge of a multi-agent programming debate.\n"
+            "Each debater proposes a corrected implementation of the SAME Python function.\n"
+            "Your goals:\n"
+            "  1. Identify which debater's final code is MOST likely to be correct\n"
+            "     w.r.t. the original problem specification.\n"
+            "  2. Summarize the core bug and the key fix in plain language.\n"
+            "  3. Output a JSON object with the following fields ONLY:\n"
+            '       {\n'
+            '         "summary": "<1-3 sentence explanation of the bug & fix>",\n'
+            '         "code": "<the full, best corrected function as plain text>"\n'
+            "       }\n\n"
+            "IMPORTANT:\n"
+            "  - The `code` field MUST contain a standalone Python function definition.\n"
+            "  - Do NOT include backticks or markdown in the JSON.\n"
+            "  - Do NOT include any other keys besides `summary` and `code`.\n\n"
+            "Here is the full debate transcript:\n\n"
+            f"{transcript}\n\n"
+            "Now output ONLY the JSON object described above."
+        )
 
     def run(self) -> Dict[str, Any]:
         # In programming, 'scratchpad' passed to agents is the Context (Code + Error)
@@ -242,14 +272,9 @@ class DebateCoordinator:
         pp.pprint(rounds)
 
         return {
-            "final_answer": final_answer,
+            "summary": summary,
+            "code": code,
             "rounds": rounds,
             "full_debate_log": full_debate_log,  # Include the full debate log
             "is_correct": False  # Unknown until execution
         }
-    
-    def _update_debate_history(self, new_round):
-        self.debate_history += "--"*5 + f"Start of round {self.round_number}" + "--"*5 + "\n"
-        for indx, response in enumerate(new_round):
-            self.debate_history += f"Debator {indx} ({self.personas[indx]}): " + response + "\n"
-        self.round_number += 1
