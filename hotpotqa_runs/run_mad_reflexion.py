@@ -221,8 +221,6 @@ def main() -> None:
         "num_rounds": args.num_rounds,
         "dataset_path": os.path.abspath(args.dataset_path),
         "model_name": args.model_name,
-        "temperature": args.temperature,
-        "max_tokens": args.max_tokens,
         "num_questions": len(df),
         "num_correct": int(summary_df["is_correct"].sum()),
     }

@@ -71,7 +71,14 @@ class DebateLLM:
         base_content = system_prompt.format(examples=REFLECTIONS)
         persona_instruction = f"\n\nYou are adopting the persona of: {self.persona}. Act accordingly in your reasoning and responses."
         
-        self.system_prompt = SystemMessage(content=base_content + persona_instruction)
+        safety_instruction = (
+            "\n\nCRITICAL INSTRUCTION: Do not overthink or hallucinate. "
+            "If a previous answer was factually correct but marked wrong, assume it is a formatting issue "
+            "(e.g., needs full definition instead of acronym) rather than a factual error. "
+            "Do not invent new facts to satisfy the prompt. Stick strictly to the evidence."
+        )
+
+        self.system_prompt = SystemMessage(content=base_content + persona_instruction + safety_instruction)
 
     def initial_response(self, initial_response_prompt: PromptTemplate, prompt_kwargs) -> str:
         prompt = initial_response_prompt.format(**prompt_kwargs)

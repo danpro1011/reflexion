@@ -1,6 +1,6 @@
 python hotpotqa_runs/run_mad_reflexion.py \
-    --output_dir "results/mad_rich_personas" \
-    --num_trials 3 \
-    --num_agents 3 \
-    --personas "Skeptic" "Strategist" "Logician" \
-    --max_examples 1
+  --output_dir "hotpotqa_runs/persona_results/mad_rich_personas" \
+  --num_trials 3 \
+  --num_agents 4 \
+  --num_rounds 2 \
+  --personas "Skeptic" "Logician" "Creative" "Verifier" \
