@@ -6,9 +6,9 @@ except ImportError:
     from langchain.llms import OpenAI
 
 try:
-    from langchain.schema import HumanMessage
+    from langchain.schema import HumanMessage, SystemMessage
 except ImportError:
-    from langchain_core.messages import HumanMessage
+    from langchain_core.messages import HumanMessage, SystemMessage
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -93,5 +93,17 @@ class AnyOpenAILLM:
         else:
             # if caller passes a raw prompt, wrap as message; if they pass messages, forward
             if isinstance(query, (list, tuple)):
-                return self._call_underlying(query)
+                # Convert list of strings/messages to proper message objects
+                messages = []
+                for item in query:
+                    if isinstance(item, str):
+                        # Assume first string is system prompt, rest are user messages
+                        if len(messages) == 0:
+                            messages.append(SystemMessage(content=item))
+                        else:
+                            messages.append(HumanMessage(content=item))
+                    else:
+                        # Already a message object
+                        messages.append(item)
+                return self._call_underlying(messages)
             return self._call_underlying([HumanMessage(content=query)])
