@@ -1,0 +1,37 @@
+
+########################################
+BEGIN TRIAL 1
+Trial summary: Correct: 0, Incorrect: 0, Halted: 1
+#######################################
+------------- BEGIN CORRECT AGENTS -------------
+
+------------- BEGIN INCORRECT AGENTS -----------
+
+------------- BEGIN HALTED AGENTS -----------
+
+Solve a question answering task with interleaving Thought, Action, Observation steps. Thought can reason about the current situation, and Action can be three types: 
+(1) Search[entity], which searches the exact entity on Wikipedia and returns the first paragraph if it exists. If not, it will return some similar entities to search.
+(2) Lookup[keyword], which returns the next sentence containing keyword in the last passage successfully found by Search.
+(3) Finish[answer], which returns the answer and finishes the task.
+You may take as many steps as necessary.
+Question: VIVA Media AG changed it's name in 2004. What does their new acronym stand for?
+Thought 1: I need to search VIVA Media AG and find out what their new acronym stands for.
+Action 1: Search[VIVA Media AG]
+Observation 1: Could not find [VIVA Media AG]
+Thought 2: I couldn't find VIVA Media AG, so I should search for similar entities to see if there's any information about their name change.
+Action 2: Search[VIVA Media]
+Observation 2: Via media is a Latin phrase meaning "the middle road" or the "way between (and avoiding or reconciling) two extremes".Its use in English is highly associated with Anglican self-characterization, or as a philosophical maxim for life akin to the golden mean which advocates moderation in all thoughts and actions.Originating from the Delphic maxim nothing to excess and subsequent Ancient Greek philosophy where Aristotle (384–322 BCE) taught moderation, urging his students to follow the middle road between extremes, the via media was the dominant philosophical precept by which Ancient Roman civilisation and society was organised.
+Thought 3: I need to search for VIVA Media AG's name change in 2004 to find out what their new acronym stands for. I should try searching for VIVA Media AG name change 2004.
+Action 3: Search[VIVA Media AG name change 2004]
+Observation 3: Could not find [VIVA Media AG name change 2004]
+Thought 4: I should try searching for VIVA Media AG's new name in 2004 to find out what their new acronym stands for. I will search for VIVA Media AG new name 2004.
+Action 4: Search[VIVA Media AG new name 2004]
+Observation 4: Could not find [VIVA Media AG new name 2004]
+Thought 5: I need to try a different approach. I will search for VIVA Media AG's history to see if I can find information about their name change in 2004.
+Action 5: Search[VIVA Media AG history]
+Observation 5: Could not find [VIVA Media AG history]
+Thought 6: I need to find a different way to approach this question. I will search for VIVA Media AG's corporate changes in 2004 to see if I can find information about their new acronym.
+Action 6: Search[VIVA Media AG corporate changes 2004]
+Observation 6: Telekom Electronic Beats (TEB) is an international music marketing program of Deutsche Telekom focusing on electronic music and international club culture. The program was founded in 2000. It comprises a media portfolio and has been organizing events such as concerts, festivals and club nights with mainly electronic music artists throughout Europe.
+Correct answer: Gesellschaft mit beschränkter Haftung
+

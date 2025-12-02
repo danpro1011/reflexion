@@ -311,3 +311,5 @@ judge_end_of_round_reflection_prompt = PromptTemplate(
     input_variables=["affirmative_response", "negative_response", "round_num"],
     template=JUDGE_END_OF_ROUND_PROMPT_REFLECTION
 )
+
+verbalised_sampling_system_prompt = PromptTemplate(input_variables=[], template = VERBALISED_SAMPLING_SYSTEM_PROMPT)

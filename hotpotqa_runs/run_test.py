@@ -4,7 +4,7 @@ import json
 import joblib
 from util import summarize_react_trial, log_react_trial, save_agents
 from prompts import react_agent_prompt
-from agents import ReactReflectAgent, ReactAgent, ReflexionStrategy, ReactDebateReflectAgent
+from agents import ReactReflectAgent, ReactAgent, ReflexionStrategy, ReactDebateReflectAgent, ReactVerbalisedSamplingAgent
 
 class DummyAgent(ReactAgent):
 
@@ -64,7 +64,7 @@ def run_test_single_process(hard_only = False, num_debators = 2, trails = 5):
 
         hotpot = hotpot[hotpot["question"].isin(hard_questions)]
     
-    agents = [ReactDebateReflectAgent(question = row['question'], key= row['answer'], num_debators=num_debators) for _, row in hotpot.iterrows()]
+    agents = [ReactVerbalisedSamplingAgent(question = row['question'], key= row['answer']) for _, row in hotpot.iterrows()]
     
     trial = 0
     log = ''
@@ -76,18 +76,17 @@ def run_test_single_process(hard_only = False, num_debators = 2, trails = 5):
         correct, incorrect, halted = summarize_react_trial(agents)
         print(f'Finished Trial {trial}, Correct: {len(correct)}, Incorrect: {len(incorrect)}, Halted: {len(halted)}')
         
-        
-    root  = 'root/'
-    dir_path = os.path.join('root/', 'ReAct', "VS_Debate")
-    os.makedirs(dir_path, exist_ok=True)
+        root  = 'root/'
+        dir_path = os.path.join('root/', 'ReAct', "VS_all")
+        os.makedirs(dir_path, exist_ok=True)
 
-    with open(os.path.join(dir_path, f'{len(agents)}_questions_{trial}_trials_{num_debators}_debators.txt'), 'w') as f:
-        f.write(log)
-        
+        with open(os.path.join(dir_path, f'{len(agents)}_questions_{trial}_trials.txt'), 'w') as f:
+            f.write(log)
+            
 
 
 if __name__ == "__main__":
-    run_test_single_process(num_debators=3, trails=7)
+    run_test_single_process(num_debators=3, trails=5)
     
     # run_test_multi_process()
 

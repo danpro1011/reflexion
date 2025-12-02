@@ -54,7 +54,7 @@ from debate import DebateCoordinator
 from prompts import reflect_prompt, react_agent_prompt, react_reflect_agent_prompt, REFLECTION_HEADER, LAST_TRIAL_HEADER, REFLECTION_AFTER_LAST_TRIAL_HEADER
 from prompts import cot_agent_prompt, cot_reflect_agent_prompt, cot_reflect_prompt, COT_INSTRUCTION, COT_REFLECT_INSTRUCTION
 from fewshots import WEBTHINK_SIMPLE6, REFLECTIONS, COT, COT_REFLECT
-
+from verbalised_sampling import verbalized_sampling_reflect
 
 class ReflexionStrategy(Enum):
     """
@@ -380,11 +380,11 @@ class ReactReflectAgent(ReactAgent):
             self.reflections = [self.scratchpad]
             self.reflections_str = format_last_attempt(self.question, self.reflections[0])
         elif strategy == ReflexionStrategy.REFLEXION: 
-            self.reflections += [self.prompt_reflection()]
+            self.reflections += self.prompt_reflection()
             self.reflections_str = format_reflections(self.reflections)
         elif strategy == ReflexionStrategy.LAST_ATTEMPT_AND_REFLEXION: 
             self.reflections_str = format_last_attempt(self.question, self.scratchpad)
-            self.reflections = [self.prompt_reflection()]
+            self.reflections = self.prompt_reflection()
             self.reflections_str += format_reflections(self.reflections, header = REFLECTION_AFTER_LAST_TRIAL_HEADER)
         else:
             raise NotImplementedError(f'Unknown reflection strategy: {strategy}')
@@ -450,6 +450,44 @@ class ReactDebateReflectAgent(ReactReflectAgent):
 
     def prompt_reflection(self) -> str:
         return self.debate_reflector.run(num_debators=self.num_debators, scratchpad=truncate_scratchpad(self.scratchpad, tokenizer=self.enc))
+
+class ReactVerbalisedSamplingAgent(ReactReflectAgent):
+    def __init__(self,
+                 question: str,
+                 key: str,
+                 max_steps: int = 6,
+                 agent_prompt: PromptTemplate = react_reflect_agent_prompt,
+                 reflect_prompt: PromptTemplate = reflect_prompt,
+                 docstore = None,
+                 react_llm = None,
+                 reflect_llm = None,
+                 num_debators: int = 2
+                 ) -> None:
+
+        super().__init__(question, key, max_steps, agent_prompt, docstore, react_llm)
+
+        # TODO: Initialize the reflect llm to be the debate class LLM
+        if reflect_llm is None:
+            if 'OPENAI_API_KEY' in os.environ:
+                reflect_llm = AnyOpenAILLM(
+                    temperature=0,
+                    max_tokens=250,
+                    model_name="gpt-3.5-turbo",
+                    openai_api_key=os.environ['OPENAI_API_KEY'])
+            else:
+                raise ValueError("reflect_llm must be provided or OPENAI_API_KEY must be set")
+        else:
+            reflect_llm = reflect_llm
+
+        self.debate_reflector = DebateCoordinator(question=question,answer_key=key,llm = reflect_llm)
+        self.reflect_prompt = reflect_prompt
+        self.reflect_examples = REFLECTIONS
+        self.reflections: List[str] = []
+        self.reflections_str: str = ''
+        self.num_debators = num_debators
+
+    def prompt_reflection(self) -> str:
+        return verbalized_sampling_reflect(llm = self.reflect_llm, question = self.question, scratchpad=self.scratchpad)
 
 
 
