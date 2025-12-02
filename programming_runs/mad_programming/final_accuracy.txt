@@ -1,3 +1,0 @@
-Final Accuracy: 50.00%
-Total Tests Processed: 2
-Total Passed: 1

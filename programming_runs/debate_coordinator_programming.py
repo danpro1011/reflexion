@@ -1,5 +1,6 @@
 import json
 import re
+import pprint
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
@@ -69,23 +70,16 @@ class DebateLLM:
         )
 
     def initial_proposal(self) -> str:
-        """
-        First round: respond directly to question + context.
-        """
         prompt = (
             f"Task:\n{self.question}\n\n"
             "Context (problem + failed code + error):\n"
             f"{self.context}\n\n"
             "Explain what is wrong and then provide the corrected function.\n"
         )
-
         messages = [self._system_message(), HumanMessage(content=prompt)]
         return self.llm.query(messages)
 
     def respond_to_debate(self, debate_history: str) -> str:
-        """
-        Subsequent rounds: see debate history and propose an improved fix.
-        """
         prompt = (
             f"Task:\n{self.question}\n\n"
             "You are in a debate with other engineers. Here is the debate so far:\n"
@@ -97,7 +91,6 @@ class DebateLLM:
             "  - At the end, output your best corrected function.\n\n"
             "Remember to end with a full function in a ```python``` code block."
         )
-
         messages = [self._system_message(), HumanMessage(content=prompt)]
         return self.llm.query(messages)
 
@@ -113,7 +106,8 @@ class DebateCoordinator:
         "summary": <text summary of bug / fix>,
         "code": <string of python code (function)>,
         "rounds": [[debator_0_round1, debator_1_round1, ...], [...]],
-        "is_correct": False  # we don't know until tests are run
+        "full_debate_log": <full transcript string>,
+        "is_correct": False
       }
     """
 
@@ -136,6 +130,7 @@ class DebateCoordinator:
         self.answer_key = answer_key
         self.num_agents = num_agents
         self.num_rounds = max(1, num_rounds)
+        self.max_num_rounds = self.num_rounds  # compatibility
 
         self.llm_kwargs = llm_kwargs or {"model_name": "gpt-3.5-turbo", "temperature": 0.2}
         self.personas = personas or ["Generic Engineer"] * num_agents
@@ -149,6 +144,9 @@ class DebateCoordinator:
             max_tokens=512,
             model_name=self.llm_kwargs.get("model_name", "gpt-3.5-turbo"),
         )
+
+        # maintain a plain-text debate history transcript
+        self.debate_history: str = ""
 
     def _build_debaters(self) -> List[DebateLLM]:
         debaters: List[DebateLLM] = []
@@ -164,6 +162,13 @@ class DebateCoordinator:
                 )
             )
         return debaters
+
+    def _update_debate_history(self, round_responses: List[str]) -> None:
+        """
+        Append a readable representation of a round to self.debate_history.
+        """
+        for idx, resp in enumerate(round_responses):
+            self.debate_history += f"Debater {idx} ({self.personas[idx]}):\n{resp}\n\n"
 
     def _build_judge_prompt(self, debate_rounds: List[List[str]]) -> str:
         """
@@ -199,57 +204,48 @@ class DebateCoordinator:
 
     def run(self) -> Dict[str, Any]:
         # In programming, 'scratchpad' passed to agents is the Context (Code + Error)
-        scratchpad = self.context 
-        rounds: List[List] = []
+        scratchpad = self.context
+        rounds: List[List[str]] = []
 
-        debators = self._build_debators(self.num_agents, scratchpad, self.llm_kwargs) 
-        
+        # build debaters
+        debaters = self._build_debaters()
+
         # --- Round 1: Initial Proposals ---
-        first_round = []
-        for idx, debator in enumerate(debators):
-            if idx == 0:
-                kwargs = {"question": debator.question, "scratchpad": debator.scratchpad}
-                response = debator.initial_response(initial_response_prompt=debate_affirmative_reflection_prompt, prompt_kwargs=kwargs)
-            else:
-                kwargs = {"question": debator.question, "scratchpad": debator.scratchpad, "debator_response": first_round[0] if first_round else ""}
-                response = debator.initial_response(initial_response_prompt=debate_negative_reflection_prompt, prompt_kwargs=kwargs)
+        first_round: List[str] = []
+        for idx, debater in enumerate(debaters):
+            try:
+                response = debater.initial_proposal()
+            except Exception:
+                # fallback: call respond_to_debate with empty history
+                response = debater.respond_to_debate(self.debate_history)
             first_round.append(response)
 
         self._update_debate_history(first_round)
         rounds.append(first_round)
-                
+
         debate_finished = False
         num_debate_rounds = 0
-        prev_response = first_round[-1] 
-        final_answer = ""
+        prev_response = first_round[-1] if first_round else ""
 
         # --- Debate Loop ---
-        while (not debate_finished and num_debate_rounds < self.max_num_rounds):
-            curr_round = []
-            for indx, debator in enumerate(debators):
-                response = debator.debate_response(debator_response=prev_response, debate_history=self.debate_history)
-                curr_round.append(response) 
-                prev_response = response
+        while (not debate_finished and num_debate_rounds < self.num_rounds):
+            curr_round: List[str] = []
+            for indx, debator in enumerate(debaters):
+                resp = debator.respond_to_debate(self.debate_history)
+                curr_round.append(resp)
+                prev_response = resp
 
             rounds.append(curr_round)
-            self._update_debate_history(curr_round)           
-            
+            self._update_debate_history(curr_round)
+
             # --- Judge Step ---
-            system_prompt = SystemMessage(content=judge_meta_reflection_prompt.format())
-            
-            aff_resp = curr_round[0] if len(curr_round) > 0 else ""
-            neg_resp = curr_round[1] if len(curr_round) > 1 else curr_round[0]
-
-            judgement_question = HumanMessage(content=judge_end_of_round_reflection_prompt.format(
-                                                            affirmative_response=aff_resp, 
-                                                            negative_response=neg_resp,
-                                                            round_num=len(rounds)))
-
+            judge_prompt = self._build_judge_prompt(rounds)
             try:
-                verdict_str = self.judge_llm.query([system_prompt, judgement_question])
+                verdict_str = self.judge_llm.query([HumanMessage(content=judge_prompt)])
                 verdict_str = verdict_str.replace("```json", "").replace("```", "").strip()
                 verdict = json.loads(verdict_str)
-                debate_finished = verdict.get("preference_found", False) or verdict.get("Whether there is a preference", "No") == "Yes"
+                # consider debate finished if judge provides code/summary or explicit flag
+                debate_finished = bool(verdict.get("code") or verdict.get("summary") or verdict.get("preference_found") or verdict.get("preference"))
             except Exception as e:
                 print(f"Error parsing judge output: {e}")
                 debate_finished = False
@@ -258,23 +254,33 @@ class DebateCoordinator:
             num_debate_rounds += 1
 
         # --- Final Extraction ---
-        if not debate_finished:
-            final_answer = prev_response
-        else:
-            final_answer = verdict.get("summary_of_winning_position", prev_response)
-            if not final_answer:
-                final_answer = verdict.get("debate_answer", prev_response)
+        # prefer judge-provided summary/code if available
+        summary = ""
+        code = ""
 
-        # Append the full debate log to the final output
+        if verdict and isinstance(verdict, dict):
+            summary = verdict.get("summary", "").strip()
+            code = verdict.get("code", "") or verdict.get("debate_answer", "")
+            # ensure code is text without markdown fences
+            if isinstance(code, str):
+                code = extract_code_block(code)
+        # fallback: extract from last response in rounds
+        if not code:
+            last_resp = prev_response or (rounds[-1][-1] if rounds and rounds[-1] else "")
+            code = extract_code_block(last_resp)
+        if not summary:
+            final_text = verdict.get("summary", "") if isinstance(verdict, dict) else (prev_response or "")
+            summary = (final_text or "")[:400]
+
         full_debate_log = self.debate_history
 
-        print("--"*20 + " Full Programming Debate Log " + "--"*20)
-        pp.pprint(rounds)
+        # pretty-print rounds for console debugging
+        pprint.pprint(rounds)
 
         return {
             "summary": summary,
             "code": code,
             "rounds": rounds,
-            "full_debate_log": full_debate_log,  # Include the full debate log
-            "is_correct": False  # Unknown until execution
+            "full_debate_log": full_debate_log,
+            "is_correct": False
         }

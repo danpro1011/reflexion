@@ -49,11 +49,26 @@ def run_humaneval_test(code: str, test_code: str) -> Dict[str, Any]:
 
     try:
         exec_globals: Dict[str, Any] = {}
-        exec(full_program, exec_globals)
+        exec(compile(full_program, "<humaneval>", "exec"), exec_globals)
         return {"passed": True, "result": "Tests Passed"}
-    except Exception:
+    except Exception as exc:
         import traceback
-        return {"passed": False, "result": traceback.format_exc()}
+        tb = "".join(
+            traceback.format_exception(exc.__class__, exc, exc.__traceback__)
+        )
+        numbered_source = "\n".join(
+            f"{i + 1:4}: {line}" for i, line in enumerate(full_program.splitlines())
+        )
+        captured_output = capture.getvalue()
+        details = [
+            "Traceback (most recent call last):",
+            tb.strip(),
+            "Captured stdout/stderr:",
+            captured_output if captured_output else "<empty>",
+            "Full input program (numbered):",
+            numbered_source,
+        ]
+        return {"passed": False, "result": "\n".join(details)}
     finally:
         sys.stdout = sys_stdout
         sys.stderr = sys_stderr
@@ -184,7 +199,7 @@ def run_mad_programming_trials(args):
             print(f"[Trial {trial}/{args.num_trials}] Running tests...")
             last_execution_result = run_humaneval_test(code, tests)
 
-            if execution_result['passed']:
+            if last_execution_result['passed']:
                 print(f"Trial {trial}: PASS")
                 passed_count += 1  # Increment passed count
                 break
