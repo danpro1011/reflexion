@@ -1,6 +1,6 @@
-# [NeurIPS 2023] Reflexion: Language Agents with Verbal Reinforcement Learning (Replication + Extension)
+# Multi-Agent Reflexion (MAR): Multi-Agent Reflexion Improves Reasoning Abilities in LLMs
 
-<!-- This repo holds the code, demos, and log files for [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) by Noah Shinn, Federico Cassano, Edward Berman, Ashwin Gopinath, Karthik Narasimhan, Shunyu Yao. -->
+<!-- This repo holds the code, demos, and log files for [Multi-Agent Reflexion (MAR): Multi-Agent Reflexion Improves Reasoning Abilities in LLMs] -->
 
 <!-- ![Reflexion RL diagram](./figures/reflexion_rl.png) -->
 
